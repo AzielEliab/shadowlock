@@ -187,6 +187,29 @@ CONTRIBUTING.md     forks are first-class
 mobile/              Flutter iPhone + Android (`flutter create .`)
 ```
 
+## Use with Grok, ChatGPT, Venice
+
+Live HTTPS runtime on the existing download-tracker Worker. Zero-retention: `/v1` does not write KV except existing download keys.
+
+OpenAPI (ChatGPT GPT Actions / Venice custom HTTP / Grok custom tool):
+
+```
+https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json
+```
+
+Setup notes: [https://shadowlock-download-tracker.vibelock.workers.dev/ai](https://shadowlock-download-tracker.vibelock.workers.dev/ai)
+
+MCP catalog (ships separately): `https://aziel-runtime.vibelock.workers.dev/mcp`
+
+```bash
+curl -sS -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \
+  -H "content-type: application/json" \
+  -d '{
+    "observed": {"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"},
+    "counterfactual": {"duration":[25,45],"cost":[70,110],"revenue":[180,260]}
+  }'
+```
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).

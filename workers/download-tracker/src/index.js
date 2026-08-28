@@ -1,3 +1,5 @@
+import { handleRuntimeApi } from "./runtime.js";
+
 /**
  * ShadowLock download tracker (Cloudflare Worker).
  *
@@ -207,6 +209,9 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
 
+    const runtime = await handleRuntimeApi(request, url);
+    if (runtime) return runtime;
+
     if (url.pathname === "/" && request.method === "GET") {
       return new Response(await indexHtml(env), {
         headers: { "Content-Type": "text/html; charset=utf-8", ...corsHeaders() },
@@ -255,11 +260,23 @@ export default {
       if (!dims.asset && url.pathname.startsWith("/download/")) {
         dims.asset = decodeURIComponent(url.pathname.slice("/download/".length));
       }
-      const asset = dims.asset || "shadowlock-0.1.0.tar.gz";
+      const asset = dims.asset || DEFAULT_ASSET;
       dims.asset = asset;
       await increment(env, dims);
-      const hosted = new URL("/" + asset, request.url);
-      return redirect(hosted.href);
+      if (!env.ASSETS) {
+        return json({ error: "assets binding missing" }, 500);
+      }
+      const assetUrl = new URL("/" + asset, request.url);
+      const assetRes = await env.ASSETS.fetch(new Request(assetUrl, { method: "GET" }));
+      if (!assetRes.ok) {
+        return json({ error: "asset not hosted", asset, status: assetRes.status }, 404);
+      }
+      const headers = new Headers();
+      headers.set("Content-Type", "application/gzip");
+      headers.set("Content-Disposition", 'attachment; filename="' + asset.replaceAll('"', "") + '"');
+      headers.set("Cache-Control", "private, no-store");
+      for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
+      return new Response(assetRes.body, { status: 200, headers });
     }
 
     return json({ error: "not found" }, 404);
