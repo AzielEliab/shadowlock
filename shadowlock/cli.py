@@ -1,6 +1,7 @@
 """Command-line interface for ShadowLock.
 
     shadowlock version
+    shadowlock ui [--host 127.0.0.1] [--port 8764]
     shadowlock observe --in jobs.jsonl --format jsonl|csv --out report.json
     shadowlock observe --in jobs.jsonl --stdout
 
@@ -33,6 +34,10 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("version", help="Print package version.")
+
+    p_ui = sub.add_parser("ui", help="Run the localhost UI (127.0.0.1:8764).")
+    p_ui.add_argument("--host", default="127.0.0.1", help="Bind host (default 127.0.0.1).")
+    p_ui.add_argument("--port", type=int, default=8764, help="Bind port (default 8764).")
 
     p_obs = sub.add_parser(
         "observe",
@@ -87,6 +92,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.cmd == "version":
         sys.stdout.write(f"shadowlock {__version__}\n")
+        return 0
+
+    if args.cmd == "ui":
+        from shadowlock.ui import serve
+
+        serve(host=args.host, port=args.port)
         return 0
 
     if args.cmd == "observe":

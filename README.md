@@ -40,6 +40,13 @@ Direct tarball (also counted): [shadowlock-0.1.0.tar.gz](https://shadowlock-down
 
 ---
 
+
+## Local UI
+
+`shadowlock ui` serves a loopback dashboard at http://127.0.0.1:8764
+
+Binds to `127.0.0.1` only. Self-contained HTML (no CDN). Paste an observed outcome and a counterfactual. Zero-retention: uploads are not written to disk.
+
 ## Verify
 
 Release artifacts are ordinary source tarballs, not a proprietary
@@ -91,6 +98,7 @@ python -m pip install shadowlock-0.1.0.tar.gz
 
 ```bash
 shadowlock version
+shadowlock ui          # localhost UI on 127.0.0.1:8764
 
 shadowlock observe --in jobs.jsonl --format jsonl --out report.json
 shadowlock observe --in jobs.jsonl --stdout
