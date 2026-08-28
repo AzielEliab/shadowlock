@@ -35,3 +35,12 @@ def test_cli_observe_out_file(jsonl_file: Path, tmp_path: Path, capsys) -> None:
     assert data["observed"] == 40
     assert "sampled_hashed_ids" in data
     assert "Alice Example" not in payload
+
+
+def test_help_lists_ui_and_version() -> None:
+    from shadowlock.cli import _build_parser
+
+    text = _build_parser().format_help()
+    assert "ui" in text
+    assert "version" in text
+    assert "127.0.0.1:8764" in text or "shadowlock ui" in text

@@ -14,6 +14,21 @@ How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Forks are welcome and always allowed.**
 
+## Quick start
+
+```bash
+python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
+shadowlock ui
+```
+
+Open http://127.0.0.1:8764 (loopback only). No CDN, no telemetry.
+
+Counted download: [https://shadowlock-download-tracker.vibelock.workers.dev/](https://shadowlock-download-tracker.vibelock.workers.dev/)
+
+**Use as a gate on an outcome you already have.** ShadowLock is zero-retention and has no OS hook: you pass it a job file you already produced (`shadowlock observe --in jobs.jsonl --stdout`). It does not intercept processes.
+
+
+
 ShadowLock is **not** a dispatcher, optimizer, scheduler, or learning
 system. It does not write back to the host. It observes selectively
 (1 in 5), computes a counterfactual expectation from initiation fields,
@@ -46,6 +61,22 @@ Direct tarball (also counted): [shadowlock-0.1.0.tar.gz](https://shadowlock-down
 `shadowlock ui` serves a loopback dashboard at http://127.0.0.1:8764
 
 Binds to `127.0.0.1` only. Self-contained HTML (no CDN). Paste an observed outcome and a counterfactual. Zero-retention: uploads are not written to disk.
+
+
+## iPhone & Android
+
+Flutter sources: [`mobile/`](mobile/). Application id `com.azieeliab.shadowlock`. Offline. No analytics. Dark matte / gold.
+
+Observed vs counterfactual fields and a report. Zero-retention; Forget drops everything.
+
+```bash
+cd mobile
+flutter create --org com.azieeliab --project-name shadowlock .
+flutter pub get
+flutter run
+```
+
+The `android/` and `ios/` folders in this tree are skeleton READMEs until you run `flutter create .` (this machine has no Flutter SDK on PATH). Then open `android/` in Android Studio or `ios/Runner.xcworkspace` in Xcode. Not a store listing.
 
 ## Verify
 
@@ -153,6 +184,7 @@ docs/whitepaper.md  July 2026 spec
 examples/           observe a synthetic JSONL
 workers/download-tracker/   Cloudflare Worker + wrangler.toml
 CONTRIBUTING.md     forks are first-class
+mobile/              Flutter iPhone + Android (`flutter create .`)
 ```
 
 ## License

@@ -28,7 +28,8 @@ def _build_parser() -> argparse.ArgumentParser:
         description=(
             "ShadowLock — a read-only, zero-retention outcome mirror "
             "(Aziel Eliab, July 2026). Observes; does not control. "
-            "Change is optional. Truth is not."
+            "Change is optional. Truth is not. "
+            "Local UI: `shadowlock ui` at http://127.0.0.1:8764."
         ),
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
