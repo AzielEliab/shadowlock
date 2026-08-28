@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shadowlock"
+version = "0.1.0"
+description = "Read-only, zero-retention, software-agnostic outcome mirror for operational decision systems (ShadowLock, July 2026). Observes; does not control."
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Aziel Eliab"}]
+requires-python = ">=3.10"
+keywords = [
+    "outcome-mirror",
+    "counterfactual",
+    "read-only",
+    "zero-retention",
+    "operations",
+    "privacy",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business",
+    "Intended Audience :: Developers",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+shadowlock = "shadowlock.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/AzielEliab/shadowlock"
+Download = "https://github.com/AzielEliab/shadowlock/releases"
+Issues = "https://github.com/AzielEliab/shadowlock/issues"
+
+[tool.setuptools.packages.find]
+include = ["shadowlock*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
