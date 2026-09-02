@@ -4,7 +4,7 @@ import { handleRuntimeApi } from "./runtime.js";
  * ShadowLock download tracker (Cloudflare Worker).
  *
  * GET  /download?repo=AzielEliab/shadowlock&tag=latest&asset=...
- *      increments KV, 302 to the GitHub release asset
+ *      increments KV, serves gzip via ASSETS.fetch (no 302)
  *      (default https://github.com/AzielEliab/shadowlock/releases)
  * GET  /stats   JSON totals + per-repo + per-branch breakdown
  * POST /event   forks report a download {owner,repo,branch,fork,asset}
@@ -20,6 +20,12 @@ const DEFAULT_REPO = "shadowlock";
 const DEFAULT_BRANCH = "main";
 const GITHUB_RELEASES = "https://github.com/AzielEliab/shadowlock/releases";
 const GITHUB_LATEST = "https://github.com/AzielEliab/shadowlock/releases/latest";
+const HOST = "https://shadowlock-download-tracker.vibelock.workers.dev";
+const GITHUB_REPO = "https://github.com/AzielEliab/shadowlock";
+const INSTALL_LINE = "curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash";
+const DOI = "https://doi.org/10.5281/zenodo.21435707";
+const ZENODO = "https://zenodo.org/records/21435707";
+
 
 function corsHeaders() {
   return {
@@ -137,6 +143,7 @@ async function collectStats(env) {
 
   for (const k of keys) {
     const name = k.name;
+    if (name === viewsKey() || name === totalKey() || name === githubCacheKey()) continue;
     const n = parseInt((await env.DOWNLOADS.get(name)) || "0", 10);
     if (!Number.isFinite(n) || n <= 0) continue;
     const parts = name.split("|");
@@ -151,24 +158,151 @@ async function collectStats(env) {
     breakdown.push({ project, owner, repo, branch, fork: forkFlag, count: n });
   }
 
+  const totalDirect = parseInt((await env.DOWNLOADS.get(totalKey())) || "0", 10);
+  const views = parseInt((await env.DOWNLOADS.get(viewsKey())) || "0", 10) || 0;
+  const github = await githubStats(env);
+  const shown = Number.isFinite(totalDirect) && totalDirect > 0 ? totalDirect : total;
   return {
     project: PROJECT,
-    total,
+    total: shown,
+    views,
+    downloads: shown,
     by_repo,
     by_branch,
     by_fork,
     breakdown,
-    note: "Forks identified by GitHub owner/repo. Key layout: project|owner|repo|branch|fork",
+    github: {
+      stars: github.stars || 0,
+      forks: github.forks || 0,
+      watchers: github.watchers || 0,
+      release_download_count: github.release_download_count || 0,
+    },
+    note: "Forks identified by GitHub owner/repo. Key layout: project|owner|repo|branch|fork. Views are separate from downloads. /v1 does not increment.",
   };
+}
+
+
+
+function viewsKey() {
+  return PROJECT + "|__views__";
+}
+
+function githubCacheKey() {
+  return PROJECT + "|__github__";
+}
+
+async function incrementViews(env) {
+  const n = parseInt((await env.DOWNLOADS.get(viewsKey())) || "0", 10) + 1;
+  await env.DOWNLOADS.put(viewsKey(), String(n));
+  return n;
+}
+
+async function githubStats(env) {
+  const cached = await env.DOWNLOADS.get(githubCacheKey());
+  if (cached) {
+    try {
+      const obj = JSON.parse(cached);
+      if (obj && obj.fetched_at && Date.now() - obj.fetched_at < 5 * 60 * 1000) {
+        return obj;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  const headers = { "User-Agent": "Mozilla/5.0 ShadowLock-download-tracker", Accept: "application/vnd.github+json" };
+  let stars = 0;
+  let forks = 0;
+  let watchers = 0;
+  let release_download_count = 0;
+  try {
+    const repoRes = await fetch("https://api.github.com/repos/AzielEliab/shadowlock", { headers });
+    if (repoRes.ok) {
+      const repo = await repoRes.json();
+      stars = Number(repo.stargazers_count) || 0;
+      forks = Number(repo.forks_count) || 0;
+      watchers = Number(repo.subscribers_count != null ? repo.subscribers_count : repo.watchers_count) || 0;
+    }
+    const relRes = await fetch("https://api.github.com/repos/AzielEliab/shadowlock/releases/latest", { headers });
+    if (relRes.ok) {
+      const rel = await relRes.json();
+      const assets = Array.isArray(rel.assets) ? rel.assets : [];
+      release_download_count = assets.reduce((s, a) => s + (Number(a.download_count) || 0), 0);
+    }
+  } catch {
+    /* public API; empty is fine */
+  }
+  const out = { stars, forks, watchers, release_download_count, fetched_at: Date.now() };
+  try {
+    await env.DOWNLOADS.put(githubCacheKey(), JSON.stringify(out));
+  } catch {
+    /* ignore */
+  }
+  return out;
+}
+
+function installScript() {
+  return `#!/usr/bin/env bash
+# ShadowLock one-click install. Counted download via this Worker.
+set -euo pipefail
+HOST="${HOST}"
+ASSET="${DEFAULT_ASSET}"
+WORKDIR="\${SHADOWLOCK_HOME:-\$HOME/shadowlock}"
+mkdir -p "\$WORKDIR"
+cd "\$WORKDIR"
+echo "Downloading counted tarball from \${HOST}/download (User-Agent Mozilla/5.0)…"
+curl -fsSL -A 'Mozilla/5.0' "\${HOST}/download?asset=\${ASSET}" -o "\${ASSET}"
+tar -xzf "\${ASSET}"
+DIR="\$(find . -maxdepth 1 -type d -name 'shadowlock-*' | head -n 1)"
+if [ -n "\${DIR}" ]; then
+  cd "\${DIR}"
+fi
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e .
+echo
+echo "Installed ShadowLock."
+echo "Run:  shadowlock ui"
+echo "Then open http://127.0.0.1:8764  (loopback only)"
+echo "Author: Aziel Eliab."
+`;
+}
+
+async function serveAsset(request, env, asset, { head = false } = {}) {
+  if (!env.ASSETS) {
+    return json({ error: "assets binding missing" }, 500);
+  }
+  const assetUrl = new URL("/" + asset, request.url);
+  const assetRes = await env.ASSETS.fetch(new Request(assetUrl, { method: "GET" }));
+  if (!assetRes.ok) {
+    return json({ error: "asset not hosted", asset, status: assetRes.status }, 404);
+  }
+  const headers = new Headers();
+  headers.set("Content-Type", "application/gzip");
+  headers.set("Content-Disposition", 'attachment; filename="' + asset.replaceAll('"', "") + '"');
+  headers.set("Cache-Control", "private, no-store");
+  const len = assetRes.headers.get("Content-Length");
+  if (len) headers.set("Content-Length", len);
+  for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
+  if (head) {
+    return new Response(null, { status: 200, headers });
+  }
+  return new Response(assetRes.body, { status: 200, headers });
 }
 
 async function indexHtml(env) {
   const stats = await collectStats(env);
-  const total = Number(stats.total) || 0;
-  const n = total.toLocaleString("en-US");
-  const github = (typeof GITHUB_LATEST !== "undefined" && GITHUB_LATEST)
-    ? GITHUB_LATEST
-    : GITHUB_RELEASES;
+  const views = Number(stats.views) || 0;
+  const downloads = Number(stats.downloads != null ? stats.downloads : stats.total) || 0;
+  const v = views.toLocaleString("en-US");
+  const n = downloads.toLocaleString("en-US");
+  const gh = stats.github || {};
+  const breakdown = (stats.breakdown || [])
+    .map(
+      (b) =>
+        `<li><code>${b.owner}/${b.repo}</code> branch <code>${b.branch}</code> fork=${b.fork} → ${b.count}</li>`,
+    )
+    .join("") || "<li>none yet</li>";
   return `<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -176,26 +310,76 @@ async function indexHtml(env) {
 <title>ShadowLock downloads</title>
 <style>
   :root { color-scheme: dark; }
-  body { font: 16px/1.45 system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1.25rem; background: #0e1014; color: #e8eaef; }
+  body { font: 16px/1.45 system-ui, sans-serif; max-width: 42rem; margin: 3rem auto; padding: 0 1.25rem 4rem; background: #0e1014; color: #e8eaef; }
   h1 { font-size: 1.75rem; margin: 0 0 .35rem; }
   .motto { color: #9aa3b2; margin: 0 0 1.5rem; }
   .card { border: 1px solid #2a3140; border-radius: 12px; padding: 1.25rem 1.35rem; background: #151922; }
-  .count { font-size: 2.4rem; font-variant-numeric: tabular-nums; font-weight: 700; margin: 0; }
-  .count span { font-size: 1rem; font-weight: 500; color: #9aa3b2; }
-  a.dl { display: inline-block; margin-top: 1rem; background: #e8eaef; color: #0e1014; text-decoration: none; font-weight: 650; padding: .65rem 1rem; border-radius: 8px; }
+  .nums { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 0 0 1rem; }
+  .count { font-size: 2.2rem; font-variant-numeric: tabular-nums; font-weight: 700; margin: 0; }
+  .count span { display: block; font-size: .95rem; font-weight: 500; color: #9aa3b2; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 0 0 .85rem; }
+  @media (max-width: 520px) { .btns { grid-template-columns: 1fr; } }
+  a.btn, button.btn { display: block; width: 100%; box-sizing: border-box; text-align: center; font: inherit; font-size: 1.2rem; font-weight: 750; padding: 1rem 1.1rem; border-radius: 10px; border: 0; cursor: pointer; text-decoration: none; }
+  a.btn.primary { background: #e8eaef; color: #0e1014; }
+  button.btn.install { background: #c9a227; color: #14110a; }
+  button.btn.install.copied { background: #7dcf9a; color: #0e1014; }
+  .kid { font-size: 1.05rem; margin: 0 0 1rem; }
   .meta { margin-top: 1.1rem; color: #9aa3b2; font-size: .92rem; }
   .meta a { color: #c9d4ff; }
   .iso { margin-top: .85rem; font-size: .85rem; color: #7d8696; }
+  .banner { border: 1px solid #5c4a1a; background: #241c0d; color: #f0d78c; padding: .85rem 1rem; border-radius: 8px; margin: 0 0 1.2rem; font-size: .92rem; }
+  pre { background: #0e1014; padding: .75rem .9rem; overflow: auto; border-radius: 8px; font-size: .82rem; }
+  code { font-size: .88rem; }
 </style>
 <body>
   <h1>ShadowLock</h1>
-  <p class="motto">Change is optional. Truth is not.</p>
+  <p class="motto">Change is optional. Truth is not. Author Aziel Eliab.</p>
+  <p class="banner">THIS IS: a counterfactual observation envelope with hashed ids. THIS IS NOT: a people profiler, PII store, or truth score. Zero-retention on /v1. Author Aziel Eliab.</p>
   <div class="card">
-    <p class="count">${n}<span> downloads of this project</span></p>
-    <a class="dl" href="/download?asset=shadowlock-0.1.0.tar.gz">Download shadowlock-0.1.0.tar.gz — ${n} counted</a>
-    <p class="meta">The count ticks on this click. Nobody reports anything. Forks using this same link are counted automatically.</p>
-    <p class="iso">Isolated counter: Worker <code>shadowlock-download-tracker</code>, project <code>shadowlock</code>. Not mixed with any other *Lock.</p>
-    <p class="meta"><a href="/stats">JSON stats</a> · <a href="${github}">GitHub releases</a></p>
+    <div class="nums">
+      <p class="count">${v}<span>Views</span></p>
+      <p class="count">${n}<span>Downloads</span></p>
+    </div>
+    <p class="kid"><strong>Two big buttons.</strong> Download saves the gzip (the Downloads number goes up). One-click install copies a Terminal command. After it finishes, type <code>shadowlock ui</code>.</p>
+    <div class="btns">
+      <a class="btn primary dl" href="/download?asset=${DEFAULT_ASSET}">Download</a>
+      <button type="button" class="btn install" id="install-btn">One-click install</button>
+    </div>
+    <pre id="install-cmd">${INSTALL_LINE}</pre>
+    <p class="kid">Then run: <code>shadowlock ui</code> and open http://127.0.0.1:8764 (this computer only).</p>
+    <p class="meta">The download count ticks on the Download click. The Worker serves the gzip (HTTP 200). No 302 to GitHub. Forks using this same link are counted automatically. ${DEFAULT_ASSET} — ${n} counted.</p>
+    <p class="iso">Isolated counter: Worker <code>shadowlock-download-tracker</code>, project <code>${PROJECT}</code>, KV <code>SHADOWLOCK_DOWNLOADS</code>. Not mixed with any other product. /v1 does not increment downloads.</p>
+    <p class="meta">GitHub: stars ${gh.stars || 0} · forks ${gh.forks || 0} · watchers ${gh.watchers || 0} · release assets ${gh.release_download_count || 0}</p>
+    <p class="meta">Paper: <a href="${DOI}">doi:10.5281/zenodo.21435707</a> · <a href="${ZENODO}">Zenodo</a> · Apache-2.0 · Eliab, Aziel</p>
+    <p class="meta"><a href="/stats">JSON stats</a> · <a href="/openapi.json">OpenAPI</a> · <a href="/v1/skill">Skill</a> · <a href="/ai">AI runtime</a> · <a href="${GITHUB_REPO}">GitHub</a> · <a href="${GITHUB_LATEST}">releases</a></p>
+    <script>
+      (function () {
+        var cmd = "curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash";
+        var btn = document.getElementById("install-btn");
+        var pre = document.getElementById("install-cmd");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+          function done(ok) {
+            btn.textContent = ok ? "Copied! Paste in Terminal, then run shadowlock ui" : "Select the command, copy it, then run shadowlock ui";
+            btn.classList.add("copied");
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(cmd).then(function () { done(true); }).catch(function () { done(false); });
+          } else {
+            done(false);
+            if (pre && window.getSelection) {
+              var r = document.createRange();
+              r.selectNodeContents(pre);
+              var sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(r);
+            }
+          }
+        });
+      })();
+    </script>
+    <h2>Per repo / branch / fork</h2>
+    <ul>${breakdown}</ul>
   </div>
 </body>
 </html>`;
@@ -209,12 +393,26 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
 
+    if ((url.pathname === "/install.sh" || url.pathname === "/install.sh/") && request.method === "GET") {
+      return new Response(installScript(), {
+        status: 200,
+        headers: {
+          "Content-Type": "text/x-shellscript; charset=utf-8",
+          "Cache-Control": "private, no-store",
+          ...corsHeaders(),
+        },
+      });
+    }
+
+
     const runtime = await handleRuntimeApi(request, url);
     if (runtime) return runtime;
 
+
     if (url.pathname === "/" && request.method === "GET") {
+      await incrementViews(env);
       return new Response(await indexHtml(env), {
-        headers: { "Content-Type": "text/html; charset=utf-8", ...corsHeaders() },
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", ...corsHeaders() },
       });
     }
 
@@ -248,35 +446,23 @@ export default {
       });
     }
 
-    if (url.pathname === "/go" && request.method === "GET") {
+    if (url.pathname === "/go" && (request.method === "GET" || request.method === "HEAD")) {
       const dims = parseDims(url.searchParams);
-      await increment(env, dims);
-      const asset = dims.asset || "shadowlock-0.1.0.tar.gz";
-      return redirect(githubAssetUrl(dims.owner, dims.repo, dims.tag, asset));
+      const asset = dims.asset || DEFAULT_ASSET;
+      dims.asset = asset;
+      if (request.method === "GET") await increment(env, dims);
+      return serveAsset(request, env, asset, { head: request.method === "HEAD" });
     }
 
-    if ((url.pathname === "/download" || url.pathname.startsWith("/download/")) && request.method === "GET") {
+    if ((url.pathname === "/download" || url.pathname.startsWith("/download/")) && (request.method === "GET" || request.method === "HEAD")) {
       const dims = parseDims(url.searchParams);
       if (!dims.asset && url.pathname.startsWith("/download/")) {
         dims.asset = decodeURIComponent(url.pathname.slice("/download/".length));
       }
       const asset = dims.asset || DEFAULT_ASSET;
       dims.asset = asset;
-      await increment(env, dims);
-      if (!env.ASSETS) {
-        return json({ error: "assets binding missing" }, 500);
-      }
-      const assetUrl = new URL("/" + asset, request.url);
-      const assetRes = await env.ASSETS.fetch(new Request(assetUrl, { method: "GET" }));
-      if (!assetRes.ok) {
-        return json({ error: "asset not hosted", asset, status: assetRes.status }, 404);
-      }
-      const headers = new Headers();
-      headers.set("Content-Type", "application/gzip");
-      headers.set("Content-Disposition", 'attachment; filename="' + asset.replaceAll('"', "") + '"');
-      headers.set("Cache-Control", "private, no-store");
-      for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
-      return new Response(assetRes.body, { status: 200, headers });
+      if (request.method === "GET") await increment(env, dims);
+      return serveAsset(request, env, asset, { head: request.method === "HEAD" });
     }
 
     return json({ error: "not found" }, 404);

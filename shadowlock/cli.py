@@ -12,6 +12,7 @@ Input files are opened read-only. Optional ``--airgap`` refuses proxy env vars.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Sequence
@@ -72,6 +73,16 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Refuse to run if HTTP(S)_PROXY / ALL_PROXY (or lowercase) are set.",
     )
+
+    p_doc = sub.add_parser("doctor", help="Self-check. No network, no telemetry.")
+    p_doc.add_argument("--json", action="store_true", dest="as_json", help="Print doctor results as JSON.")
+
+    p_imp = sub.add_parser("import", help="Import a JSON document.")
+    p_imp.add_argument("path")
+
+    p_exp = sub.add_parser("export", help="Export a JSON document.")
+    p_exp.add_argument("path")
+
     return parser
 
 
@@ -131,6 +142,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     return 2
+
+
+
+    if args.cmd == "doctor":
+        from shadowlock.doctor import run_doctor
+
+        return run_doctor(as_json=getattr(args, "as_json", False))
+
+    if args.cmd == "import":
+        from shadowlock.jsonio import import_json
+
+        rec = import_json(args.path)
+        sys.stdout.write(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
+        return 0
+
+    if args.cmd == "export":
+        from shadowlock.jsonio import export_json
+
+        rec = export_json(args.path)
+        sys.stdout.write(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
+        return 0
 
 
 if __name__ == "__main__":  # pragma: no cover

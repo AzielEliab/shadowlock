@@ -120,6 +120,7 @@ PAGE = r"""<!DOCTYPE html>
     </fieldset>
     <div class="actions">
       <button type="submit" id="run">Show report</button>
+      <label class="ghost">Import JSON file <input type="file" id="import-json" accept="application/json,.json"></label>
       <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
     </div>
   </form>
@@ -174,6 +175,21 @@ PAGE = r"""<!DOCTYPE html>
       $("export").disabled = false;
     } catch (e) { fail(String(e.message || e)); }
     finally { $("run").disabled = false; }
+  });
+  const importEl = $("import-json");
+  if (importEl) importEl.addEventListener("change", () => {
+    const f = importEl.files && importEl.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let obj;
+      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("invalid JSON"); return; }
+      const observed = obj.observed || obj;
+      const counterfactual = obj.counterfactual || {};
+      $("observed").value = JSON.stringify(observed, null, 2);
+      if (Object.keys(counterfactual).length) $("counterfactual").value = JSON.stringify(counterfactual, null, 2);
+    };
+    reader.readAsText(f);
   });
   $("export").addEventListener("click", () => {
     if (!last) return;

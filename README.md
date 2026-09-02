@@ -21,6 +21,35 @@ python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 shadowlock ui
 ```
 
+
+## One-click install
+
+```bash
+curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash
+```
+
+The script curls the **counted** tarball from this project's Worker
+(`/download`, User-Agent `Mozilla/5.0`), extracts, makes a venv, and
+`pip install -e .`. Then run `shadowlock ui`.
+
+Or tap **Download** / **One-click install** on the Worker homepage:
+https://shadowlock-download-tracker.vibelock.workers.dev/
+
+## Counted download (Cloudflare Worker)
+
+**This is the counted download.** GitHub releases exist as a mirror.
+The Worker serves the gzip itself (HTTP 200, no 302 to GitHub).
+
+- Homepage: [https://shadowlock-download-tracker.vibelock.workers.dev/](https://shadowlock-download-tracker.vibelock.workers.dev/)
+- Direct tarball: [shadowlock-0.1.0.tar.gz](https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.1.0.tar.gz)
+- One-click install: [https://shadowlock-download-tracker.vibelock.workers.dev/install.sh](https://shadowlock-download-tracker.vibelock.workers.dev/install.sh)
+- Skill: [https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill](https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill)
+- OpenAPI: [https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json](https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json)
+- GitHub: [https://github.com/AzielEliab/shadowlock](https://github.com/AzielEliab/shadowlock)
+- Zenodo DOI: [10.5281/zenodo.21435707](https://doi.org/10.5281/zenodo.21435707) · [record](https://zenodo.org/records/21435707)
+
+Isolated counter: Worker `shadowlock-download-tracker`, KV `SHADOWLOCK_DOWNLOADS`. `/v1` does not increment downloads.
+
 Open http://127.0.0.1:8764 (loopback only). No CDN, no telemetry.
 
 Counted download: [https://shadowlock-download-tracker.vibelock.workers.dev/](https://shadowlock-download-tracker.vibelock.workers.dev/)
