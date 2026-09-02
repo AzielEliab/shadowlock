@@ -115,11 +115,18 @@ function githubAssetUrl(owner, repo, tag, asset) {
   return `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/download/${encodeURIComponent(tag)}/${encodeURIComponent(asset)}`;
 }
 
+
+function totalKey() {
+  return PROJECT + "|__total__";
+}
+
 async function increment(env, dims) {
   const key = kvKey(dims);
   const n = parseInt((await env.DOWNLOADS.get(key)) || "0", 10) + 1;
   await env.DOWNLOADS.put(key, String(n));
-  return n;
+  const tot = parseInt((await env.DOWNLOADS.get(totalKey())) || "0", 10) + 1;
+  await env.DOWNLOADS.put(totalKey(), String(tot));
+  return tot;
 }
 
 async function listAllKeys(env) {
