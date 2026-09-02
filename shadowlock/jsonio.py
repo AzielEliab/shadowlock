@@ -1,4 +1,7 @@
-"""Small JSON import/export for ShadowLock. Author: Aziel Eliab."""
+"""JSON import/export. Reads and writes only the paths you name. No hidden store.
+
+Author: Aziel Eliab.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +13,8 @@ from shadowlock import __version__
 
 AUTHOR = "Aziel Eliab"
 PRODUCT = "ShadowLock"
-STATE_NAME = ".shadowlock-state.json"
+PACKAGE = "shadowlock"
+MAX_BYTES = 1 * 1024 * 1024
 
 
 def _as_path(path: str | Path) -> Path:
@@ -18,38 +22,34 @@ def _as_path(path: str | Path) -> Path:
 
 
 def import_json(path: str | Path) -> dict[str, Any]:
+    """Read a JSON object from ``path``. Does not write a sidecar file."""
     pth = _as_path(path)
-    doc = json.loads(pth.read_text(encoding="utf-8"))
+    raw = pth.read_bytes()
+    if len(raw) > MAX_BYTES:
+        raise ValueError("file too large")
+    doc = json.loads(raw.decode("utf-8"))
     if not isinstance(doc, dict):
         raise ValueError("JSON object required")
-    dest = Path.cwd() / STATE_NAME
-    dest.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return {
         "ok": True,
         "imported": str(pth),
-        "stored": str(dest),
         "keys": sorted(str(k) for k in doc.keys()),
         "author": AUTHOR,
         "product": PRODUCT,
         "version": __version__,
+        "document": doc,
     }
 
 
-def export_json(path: str | Path) -> dict[str, Any]:
+def export_json(path: str | Path, payload: Any | None = None) -> dict[str, Any]:
+    """Write a JSON document to ``path``. Caller names the file; nothing else is stored."""
     pth = _as_path(path)
-    src = Path.cwd() / STATE_NAME
-    payload: Any = {}
-    if src.exists():
-        try:
-            payload = json.loads(src.read_text(encoding="utf-8"))
-        except Exception:
-            payload = {}
     doc = {
         "product": PRODUCT,
-        "package": "shadowlock",
+        "package": PACKAGE,
         "version": __version__,
         "author": AUTHOR,
-        "payload": payload,
+        "payload": {} if payload is None else payload,
     }
     pth.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return {

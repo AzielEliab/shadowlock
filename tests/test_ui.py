@@ -37,10 +37,60 @@ def test_ui_get_root_200_contains_shadowlock() -> None:
             html = resp.read()
         assert b"ShadowLock" in html
         assert b"127.0.0.1" in html
+        assert b"Import JSON file" in html
+        assert b"Export JSON report" in html
         with urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=5) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
         assert payload["ok"] is True
         assert payload["bind_host"] == "127.0.0.1"
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        thread.join(timeout=2)
+
+
+def test_page_has_file_import_and_export() -> None:
+    from shadowlock.ui import PAGE
+
+    assert "Import JSON file" in PAGE
+    assert 'type="file"' in PAGE
+    assert "Export JSON report" in PAGE
+    assert "Aziel Eliab" in PAGE
+    assert "Simple" in PAGE
+    assert "Advanced" in PAGE
+
+
+def test_ui_observe_drops_names() -> None:
+    httpd = make_server("127.0.0.1", 0)
+    port = httpd.server_address[1]
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    try:
+        body = json.dumps({
+            "observed": {
+                "id": "WO-0001",
+                "task_class": "repair",
+                "urgency": 0.5,
+                "actual_duration": 40,
+                "actual_cost": 90,
+                "actual_revenue": 220,
+                "actual_outcome": "complete",
+                "name": "Alice Example",
+            },
+            "counterfactual": {"duration": [25, 45], "cost": [70, 110], "revenue": [180, 260]},
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{port}/api/observe",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            report = json.loads(resp.read().decode("utf-8"))
+        assert report["author"] == "Aziel Eliab"
+        dumped = json.dumps(report)
+        assert "Alice Example" not in dumped
+        assert "ledger" in report["report"]
     finally:
         httpd.shutdown()
         httpd.server_close()

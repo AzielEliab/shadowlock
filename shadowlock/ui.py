@@ -30,6 +30,7 @@ PAGE = r"""<!DOCTYPE html>
   :root {
     --bg: #0f1419; --panel: #171e27; --ink: #e8edf2; --muted: #8b97a6;
     --line: #2a3544; --gold: #d4bc6a; --focus: #7aa2d4; --bad: #d4534b;
+    --ok: #7dcea0;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -43,7 +44,8 @@ PAGE = r"""<!DOCTYPE html>
   }
   h1 { font-size: 2rem; font-weight: 650; letter-spacing: 0.04em; margin: 0.35rem 0 0.25rem; }
   .motto { color: var(--gold); font-style: italic; margin: 0 0 0.85rem; font-size: 1.05rem; }
-  .lede { color: var(--muted); margin: 0 0 1.5rem; max-width: 40rem; }
+  .lede { color: var(--muted); margin: 0 0 1.1rem; max-width: 40rem; }
+  .limit { color: var(--gold); margin: 0 0 1.4rem; font-size: 0.95rem; }
   fieldset {
     border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
     padding: 1.1rem 1.15rem 1.2rem; margin: 0 0 1rem;
@@ -58,13 +60,13 @@ PAGE = r"""<!DOCTYPE html>
     font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--muted); margin-bottom: 0.12rem;
   }
-  textarea {
+  textarea, input[type=file] {
     width: 100%; padding: 0.55rem 0.65rem; border: 1px solid var(--line);
     border-radius: 6px; background: #10161d; color: var(--ink);
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.88rem;
   }
   textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
-  .actions { display: flex; gap: 0.65rem; flex-wrap: wrap; margin: 0 0 1.6rem; }
+  .actions { display: flex; gap: 0.65rem; flex-wrap: wrap; margin: 0.4rem 0 1.2rem; }
   button {
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem;
     letter-spacing: 0.04em; padding: 0.65rem 1rem; border-radius: 8px;
@@ -73,6 +75,16 @@ PAGE = r"""<!DOCTYPE html>
   }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
   button.ghost { background: transparent; color: var(--ink); }
+  .addfile {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    width: 100%; min-height: 7.2rem; font-size: 1.55rem; font-weight: 700;
+    letter-spacing: 0.02em; border: 2px dashed var(--gold); background: #1a160c;
+    color: var(--ink); border-radius: 14px; cursor: pointer; margin: 0.2rem 0 0.7rem;
+  }
+  .addfile:hover { filter: brightness(1.08); }
+  .views { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin: 0 0 1rem; }
+  .views button { border: 0; border-radius: 0; padding: 0.35rem 0.9rem; background: transparent; color: var(--muted); }
+  .views button.on { background: var(--gold); color: #14110a; font-weight: 650; }
   h2 {
     font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--muted); font-weight: 600; margin: 1.2rem 0 0.7rem;
@@ -87,28 +99,36 @@ PAGE = r"""<!DOCTYPE html>
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.8rem;
     white-space: pre-wrap; word-break: break-word; margin: 0;
   }
+  .plain { font-size: 1.15rem; margin: 0 0 0.7rem; }
   .err { color: var(--bad); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  .hidden { display: none; }
   footer { margin-top: 2rem; color: var(--muted); font-size: 0.88rem; }
   .foot-note { font-style: italic; }
 </style>
 </head>
 <body>
   <header>
-    <div class="tag">ShadowLock · __VERSION__ · loopback · zero-retention</div>
+    <div class="tag">ShadowLock · __VERSION__ · Aziel Eliab · loopback · zero-retention</div>
     <h1>ShadowLock</h1>
     <p class="motto">Change is optional. Truth is not.</p>
     <p class="lede">
-      Paste an observed outcome and a counterfactual prior. The mirror reports
-      anonymous aggregates and forgets the payloads. Nothing is written to disk.
-      This is not a dispatcher, optimizer, or scheduler. Bound to 127.0.0.1 only.
+      Import a job file you already have. The page compares it to a guess,
+      shows money made / lost / left on the table, and forgets the file.
+      Bound to 127.0.0.1 only. Nothing is written to disk.
     </p>
+    <p class="limit">This is a comparison, not a dispatcher, optimizer, scheduler, or truth score.</p>
   </header>
 
   <form id="mirror-form" autocomplete="off">
     <fieldset>
-      <legend>Mirror</legend>
+      <legend>Import</legend>
+      <p class="lede" style="margin-bottom:0.4rem">Tap the big button to pick a JSON file. Paste is optional.</p>
+      <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
+      <button class="addfile" id="import-btn" type="button">Import JSON file</button>
       <label for="observed">
-        <span class="kicker">Observed outcome</span>
+        <span class="kicker">Observed outcome (or paste)</span>
         JSON object: task_class, urgency, actual_duration, actual_cost, actual_revenue, actual_outcome.
       </label>
       <textarea id="observed" rows="8" placeholder='{"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"}'></textarea>
@@ -120,18 +140,25 @@ PAGE = r"""<!DOCTYPE html>
     </fieldset>
     <div class="actions">
       <button type="submit" id="run">Show report</button>
-      <label class="ghost">Import JSON file <input type="file" id="import-json" accept="application/json,.json"></label>
+      <button type="button" class="ghost" id="sample">Load sample</button>
       <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
     </div>
   </form>
 
   <section id="result" hidden>
-    <h2>Read-only report</h2>
+    <h2>View</h2>
+    <div class="views" role="group" aria-label="Simple or advanced">
+      <button type="button" id="view-simple" class="on">Simple</button>
+      <button type="button" id="view-advanced">Advanced</button>
+    </div>
     <div class="card">
+      <p class="plain" id="plain"></p>
       <dl id="summary"></dl>
     </div>
-    <h2>JSON</h2>
-    <div class="card"><pre id="json"></pre></div>
+    <div id="advanced" class="hidden">
+      <h2>JSON</h2>
+      <div class="card"><pre id="json"></pre></div>
+    </div>
   </section>
   <p class="err" id="err" hidden></p>
 
@@ -143,53 +170,81 @@ PAGE = r"""<!DOCTYPE html>
 (function () {
   const $ = (id) => document.getElementById(id);
   let last = null;
+  let view = "simple";
+  const SAMPLE_OBS = {"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"};
+  const SAMPLE_CF = {"duration":[25,45],"cost":[70,110],"revenue":[180,260]};
   function fail(msg) { $("err").hidden = false; $("err").textContent = msg; }
-  $("mirror-form").addEventListener("submit", async (ev) => {
-    ev.preventDefault();
+  function setView(name) {
+    view = name;
+    $("view-simple").classList.toggle("on", name === "simple");
+    $("view-advanced").classList.toggle("on", name === "advanced");
+    $("advanced").classList.toggle("hidden", name !== "advanced");
+  }
+  $("view-simple").addEventListener("click", () => setView("simple"));
+  $("view-advanced").addEventListener("click", () => setView("advanced"));
+  function render(data) {
+    last = data;
+    $("result").hidden = false;
+    const r = data.report || {};
+    const L = r.ledger || {};
+    $("plain").textContent = "Compared this job to a guess. Names are dropped. Nothing is saved.";
+    $("summary").innerHTML =
+      "<dt>jobs looked at</dt><dd>" + (r.observed ?? "—") + "</dd>" +
+      "<dt>jobs sampled</dt><dd>" + (r.sampled ?? "—") + "</dd>" +
+      "<dt>money made</dt><dd>" + (L.money_made ?? "—") + "</dd>" +
+      "<dt>money lost</dt><dd>" + (L.money_lost ?? "—") + "</dd>" +
+      "<dt>left on the table</dt><dd>" + (L.money_left_on_table ?? "—") + "</dd>" +
+      "<dt>net gap</dt><dd>" + (L.net_variance ?? "—") + "</dd>";
+    $("json").textContent = JSON.stringify(data, null, 2);
+    $("export").disabled = false;
+    setView(view);
+  }
+  async function runMirror(observed, counterfactual) {
     $("err").hidden = true;
     $("run").disabled = true;
     try {
       const res = await fetch("/api/observe", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          observed: JSON.parse($("observed").value || "{}"),
-          counterfactual: JSON.parse($("counterfactual").value || "{}"),
-        }),
+        body: JSON.stringify({ observed: observed, counterfactual: counterfactual }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
-      last = data;
-      $("result").hidden = false;
-      const r = data.report || {};
-      const L = r.ledger || {};
-      $("summary").innerHTML =
-        "<dt>observed</dt><dd>" + (r.observed ?? "—") + "</dd>" +
-        "<dt>sampled</dt><dd>" + (r.sampled ?? "—") + "</dd>" +
-        "<dt>money made</dt><dd>" + (L.money_made ?? "—") + "</dd>" +
-        "<dt>money lost</dt><dd>" + (L.money_lost ?? "—") + "</dd>" +
-        "<dt>left on table</dt><dd>" + (L.money_left_on_table ?? "—") + "</dd>" +
-        "<dt>net variance</dt><dd>" + (L.net_variance ?? "—") + "</dd>" +
-        "<dt>efficiency</dt><dd>" + (L.efficiency_score ?? "—") + "</dd>";
-      $("json").textContent = JSON.stringify(data, null, 2);
-      $("export").disabled = false;
+      render(data);
     } catch (e) { fail(String(e.message || e)); }
     finally { $("run").disabled = false; }
+  }
+  $("mirror-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    let observed, counterfactual;
+    try {
+      observed = JSON.parse($("observed").value || "{}");
+      counterfactual = JSON.parse($("counterfactual").value || "{}");
+    } catch (e) { fail("That JSON is not valid."); return; }
+    await runMirror(observed, counterfactual);
   });
-  const importEl = $("import-json");
-  if (importEl) importEl.addEventListener("change", () => {
-    const f = importEl.files && importEl.files[0];
+  $("import-btn").addEventListener("click", () => $("import-json").click());
+  $("import-json").addEventListener("change", () => {
+    const f = $("import-json").files && $("import-json").files[0];
     if (!f) return;
     const reader = new FileReader();
     reader.onload = () => {
       let obj;
-      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("invalid JSON"); return; }
-      const observed = obj.observed || obj;
-      const counterfactual = obj.counterfactual || {};
+      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("That file is not valid JSON."); return; }
+      const observed = obj.observed || obj.payload && obj.payload.observed || obj;
+      const counterfactual = obj.counterfactual || (obj.payload && obj.payload.counterfactual) || {};
       $("observed").value = JSON.stringify(observed, null, 2);
-      if (Object.keys(counterfactual).length) $("counterfactual").value = JSON.stringify(counterfactual, null, 2);
+      if (counterfactual && typeof counterfactual === "object" && Object.keys(counterfactual).length) {
+        $("counterfactual").value = JSON.stringify(counterfactual, null, 2);
+      }
+      runMirror(observed, counterfactual);
     };
     reader.readAsText(f);
+  });
+  $("sample").addEventListener("click", () => {
+    $("observed").value = JSON.stringify(SAMPLE_OBS, null, 2);
+    $("counterfactual").value = JSON.stringify(SAMPLE_CF, null, 2);
+    runMirror(SAMPLE_OBS, SAMPLE_CF);
   });
   $("export").addEventListener("click", () => {
     if (!last) return;
@@ -257,7 +312,7 @@ def _observe_pair(observed: dict[str, Any], counterfactual: dict[str, Any]) -> d
             "ShadowLock reports are anonymous aggregates.",
             "Identifiers are sha256 hex[:12] only.",
             "No person, team, or department names are emitted.",
-            "UI path: a single pasted pair, processed in memory, not written to disk.",
+            "UI path: a single imported or pasted pair, processed in memory, not written to disk.",
         ],
     )
     return {
@@ -265,12 +320,24 @@ def _observe_pair(observed: dict[str, Any], counterfactual: dict[str, Any]) -> d
         "expectation": asdict(exp),
         "initiation": env.initiation_fields(),
         "hashed_id": env.hashed_id,
+        "author": "Aziel Eliab",
+        "product": "ShadowLock",
+        "version": __version__,
     }
 
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt: str, *args: object) -> None:
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+
+    def _loopback_ok(self) -> bool:
+        peer = self.client_address[0] if self.client_address else ""
+        host = (self.headers.get("Host") or "").split(":")[0].strip()
+        if peer not in LOOPBACK:
+            return False
+        if host and host not in LOOPBACK:
+            return False
+        return True
 
     def _send(self, code: int, body: bytes, content_type: str) -> None:
         self.send_response(code)
@@ -294,16 +361,22 @@ class Handler(BaseHTTPRequestHandler):
         return data
 
     def do_GET(self) -> None:  # noqa: N802
+        if not self._loopback_ok():
+            self._json(403, {"error": "loopback only"})
+            return
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
             self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
             return
         if path == "/health":
-            self._json(200, {"ok": True, "bind_host": DEFAULT_HOST, "name": "ShadowLock"})
+            self._json(200, {"ok": True, "bind_host": DEFAULT_HOST, "name": "ShadowLock", "author": "Aziel Eliab"})
             return
         self._json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
+        if not self._loopback_ok():
+            self._json(403, {"error": "loopback only"})
+            return
         path = urlparse(self.path).path
         if path != "/api/observe":
             self._json(404, {"error": "not found"})

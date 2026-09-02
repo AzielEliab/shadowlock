@@ -44,3 +44,12 @@ def test_help_lists_ui_and_version() -> None:
     assert "ui" in text
     assert "version" in text
     assert "127.0.0.1:8764" in text or "shadowlock ui" in text
+
+
+def test_help_lists_doctor_import_export() -> None:
+    from shadowlock.cli import _build_parser
+
+    text = _build_parser().format_help()
+    assert "doctor" in text
+    assert "import" in text
+    assert "export" in text

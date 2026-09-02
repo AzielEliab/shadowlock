@@ -23,8 +23,9 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
    the download-tracking model (see `workers/download-tracker`): they
    report as `{owner}/{repo}`, not as anonymous noise.
 2. **No persistence.** Do not add sqlite, a `.shadowlock` operations
-   store, job logs on disk, or any write of raw envelopes. Session
-   payloads live in memory and die on `forget()`.
+   store, `.shadowlock-state.json`, job logs on disk, or any write of raw envelopes. Session
+   payloads live in memory and die on `forget()`. CLI `import`/`export` and the UI
+   read and write only paths the user named.
 3. **No write adapters.** Adapters expose `iter_jobs()` / `load` only.
    A method that writes, saves, updates, dispatches, schedules, or
    modifies an external system is out of spec and must raise.

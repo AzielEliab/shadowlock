@@ -1,0 +1,16 @@
+{
+  "observed": {
+    "id": "WO-0001",
+    "task_class": "repair",
+    "urgency": 0.5,
+    "actual_duration": 40,
+    "actual_cost": 90,
+    "actual_revenue": 220,
+    "actual_outcome": "complete"
+  },
+  "counterfactual": {
+    "duration": [25, 45],
+    "cost": [70, 110],
+    "revenue": [180, 260]
+  }
+}

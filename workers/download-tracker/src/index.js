@@ -304,12 +304,6 @@ async function indexHtml(env) {
   const v = views.toLocaleString("en-US");
   const n = downloads.toLocaleString("en-US");
   const gh = stats.github || {};
-  const breakdown = (stats.breakdown || [])
-    .map(
-      (b) =>
-        `<li><code>${b.owner}/${b.repo}</code> branch <code>${b.branch}</code> fork=${b.fork} → ${b.count}</li>`,
-    )
-    .join("") || "<li>none yet</li>";
   return `<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -341,19 +335,19 @@ async function indexHtml(env) {
 <body>
   <h1>ShadowLock</h1>
   <p class="motto">Change is optional. Truth is not. Author Aziel Eliab.</p>
-  <p class="banner">THIS IS: a counterfactual observation envelope with hashed ids. THIS IS NOT: a people profiler, PII store, or truth score. Zero-retention on /v1. Author Aziel Eliab.</p>
+  <p class="banner">THIS IS: a read-only comparison of jobs you already have. THIS IS NOT: a dispatcher, optimizer, people profiler, or truth score. Zero-retention on /v1. Author Aziel Eliab.</p>
   <div class="card">
     <div class="nums">
       <p class="count">${v}<span>Views</span></p>
       <p class="count">${n}<span>Downloads</span></p>
     </div>
-    <p class="kid"><strong>Two big buttons.</strong> Download saves the gzip (the Downloads number goes up). One-click install copies a Terminal command. After it finishes, type <code>shadowlock ui</code>.</p>
+    <p class="kid"><strong>Two big buttons.</strong> Download saves the file. One-click install copies a Terminal command. After install, type <code>shadowlock ui</code>, then tap Import JSON file.</p>
     <div class="btns">
       <a class="btn primary dl" href="/download?asset=${DEFAULT_ASSET}">Download</a>
       <button type="button" class="btn install" id="install-btn">One-click install</button>
     </div>
     <pre id="install-cmd">${INSTALL_LINE}</pre>
-    <p class="kid">Then run: <code>shadowlock ui</code> and open http://127.0.0.1:8764 (this computer only).</p>
+    <p class="kid">Then run <code>shadowlock ui</code>, open http://127.0.0.1:8764 (this computer only), tap <strong>Import JSON file</strong>, then <strong>Export JSON report</strong> if you want to save.</p>
     <p class="meta">The download count ticks on the Download click. The Worker serves the gzip (HTTP 200). No 302 to GitHub. Forks using this same link are counted automatically. ${DEFAULT_ASSET} — ${n} counted.</p>
     <p class="iso">Isolated counter: Worker <code>shadowlock-download-tracker</code>, project <code>${PROJECT}</code>, KV <code>SHADOWLOCK_DOWNLOADS</code>. Not mixed with any other product. /v1 does not increment downloads.</p>
     <p class="meta">GitHub: stars ${gh.stars || 0} · forks ${gh.forks || 0} · watchers ${gh.watchers || 0} · release assets ${gh.release_download_count || 0}</p>
@@ -385,8 +379,6 @@ async function indexHtml(env) {
         });
       })();
     </script>
-    <h2>Per repo / branch / fork</h2>
-    <ul>${breakdown}</ul>
   </div>
 </body>
 </html>`;

@@ -2,6 +2,9 @@
 
     shadowlock version
     shadowlock ui [--host 127.0.0.1] [--port 8764]
+    shadowlock doctor [--verify] [--json]
+    shadowlock import FILE.json
+    shadowlock export FILE.json
     shadowlock observe --in jobs.jsonl --format jsonl|csv --out report.json
     shadowlock observe --in jobs.jsonl --stdout
 
@@ -74,13 +77,21 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Refuse to run if HTTP(S)_PROXY / ALL_PROXY (or lowercase) are set.",
     )
 
-    p_doc = sub.add_parser("doctor", help="Self-check. No network, no telemetry.")
+    p_doc = sub.add_parser(
+        "doctor",
+        help="Check that ShadowLock can run. Speaks in plain words. No network.",
+    )
+    p_doc.add_argument(
+        "--verify",
+        action="store_true",
+        help="Also compare a sample job and check names were dropped.",
+    )
     p_doc.add_argument("--json", action="store_true", dest="as_json", help="Print doctor results as JSON.")
 
-    p_imp = sub.add_parser("import", help="Import a JSON document.")
+    p_imp = sub.add_parser("import", help="Read a JSON file. Does not keep a hidden copy.")
     p_imp.add_argument("path")
 
-    p_exp = sub.add_parser("export", help="Export a JSON document.")
+    p_exp = sub.add_parser("export", help="Write a JSON file you name. Author Aziel Eliab.")
     p_exp.add_argument("path")
 
     return parser
@@ -141,28 +152,39 @@ def main(argv: Sequence[str] | None = None) -> int:
             out_path.write_text(payload + "\n", encoding="utf-8")
         return 0
 
-    return 2
-
-
-
     if args.cmd == "doctor":
         from shadowlock.doctor import run_doctor
 
-        return run_doctor(as_json=getattr(args, "as_json", False))
+        return run_doctor(
+            as_json=getattr(args, "as_json", False),
+            verify=getattr(args, "verify", False),
+        )
 
     if args.cmd == "import":
         from shadowlock.jsonio import import_json
 
-        rec = import_json(args.path)
-        sys.stdout.write(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
+        try:
+            rec = import_json(args.path)
+        except Exception as exc:  # noqa: BLE001
+            sys.stderr.write(f"shadowlock: {exc}\n")
+            return 2
+        # Do not dump the document: keys and ok only.
+        shown = {k: rec[k] for k in rec if k != "document"}
+        sys.stdout.write(json.dumps(shown, indent=2, ensure_ascii=False) + "\n")
         return 0
 
     if args.cmd == "export":
         from shadowlock.jsonio import export_json
 
-        rec = export_json(args.path)
+        try:
+            rec = export_json(args.path)
+        except Exception as exc:  # noqa: BLE001
+            sys.stderr.write(f"shadowlock: {exc}\n")
+            return 2
         sys.stdout.write(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
         return 0
+
+    return 2
 
 
 if __name__ == "__main__":  # pragma: no cover

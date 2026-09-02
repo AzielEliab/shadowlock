@@ -5,11 +5,11 @@ description: Use when calling ShadowLock hosted /v1 or installing the local pack
 
 # ShadowLock
 
-A gate on outcomes you already have. Read-only. Zero retention. Author: **Aziel Eliab**.
+Looks at jobs you already have. Read-only. Zero retention. Author: **Aziel Eliab**.
 
 **THIS IS:** a read-only, zero-retention outcome mirror for operational decisions.
 
-**THIS IS NOT:** surveillance, a predictor, a keylogger, or a retention store. Hosted `/v1` does not increment downloads or views.
+**THIS IS NOT:** a dispatcher, optimizer, scheduler, predictor, people profiler, or truth score. Hosted `/v1` does not increment downloads or views.
 
 Always send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.
 
@@ -40,10 +40,10 @@ curl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.de
 ```bash
 curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash
 shadowlock ui
-shadowlock doctor
+shadowlock doctor --verify
 ```
 
-Then open http://127.0.0.1:8764 (loopback only).
+Then open http://127.0.0.1:8764 (loopback only). Tap **Import JSON file**, then **Export JSON report**.
 
 Counted download (gzip HTTP 200, no 302): https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.1.0.tar.gz
 GitHub: https://github.com/AzielEliab/shadowlock
