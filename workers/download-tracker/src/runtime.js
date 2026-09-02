@@ -4,10 +4,19 @@
  * POST /v1/observe {observed, counterfactual}.
  */
 const PRODUCT = "shadowlock";
+const EXAMPLE_PAYLOAD = {
+  "jobs": [
+    {
+      "id": "a",
+      "status": "ok"
+    }
+  ]
+};
+
 const VERSION = "0.1.0";
 const MOTTO = "Change is optional. Truth is not.";
 const HOST = "https://shadowlock-download-tracker.vibelock.workers.dev";
-const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. Change is optional. Truth is not. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. Change is optional. Truth is not.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual}. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nGrok: import the catalog OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\n```\n\nThen open http://127.0.0.1:8764 (this computer only).\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. THIS IS NOT: a people profiler, PII store, or truth score. Zero-retention on /v1. Author Aziel Eliab.\n\nDOI: https://doi.org/10.5281/zenodo.21435707  \nRecord: https://zenodo.org/records/21435707\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n";
+const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. Change is optional. Truth is not. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. Change is optional. Truth is not.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual}. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nGrok: import the catalog OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\n```\n\nThen open http://127.0.0.1:8764 (this computer only).\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. THIS IS NOT: a people profiler, PII store, or truth score. Zero-retention on /v1. Author Aziel Eliab.\n\nDOI: https://doi.org/10.5281/zenodo.21435707  \nRecord: https://zenodo.org/records/21435707\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n\n## Catalog + local UI\n\nAuthor: **Aziel Eliab**. Honest scope: Zero-retention observation of a job list you already have. No OS hook.\n\n- Catalog product: https://aziel-runtime.vibelock.workers.dev/p/shadowlock/\n- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json\n- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n- This Worker skill: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`\n- This Worker OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json\n- Sample payload: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/example`\n\nLocal UI: **Import JSON file** (`type=file`) and **Export JSON**. Then `shadowlock doctor`.\n\nGrok: import catalog or Worker OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n";
 
 const HASHED_ID_HEX_LEN = 12;
 const PII_KEYS = new Set([
@@ -349,6 +358,7 @@ function openapiSpec() {
     servers: [{ url: HOST }],
     paths: {
       
+            "/v1/example": { get: { operationId: "shadowlockExample", summary: "Sample JSON payload. Does not increment downloads.", responses: { "200": { description: "OK" } } } },
       "/v1/skill": {
         get: {
           operationId: "shadowlock_skill",
@@ -422,8 +432,18 @@ export async function handleRuntimeApi(request, url) {
   if (!isApi) return null;
   try {
     if (path === "/v1/health" && request.method === "GET") {
-      return json({ ok: true, product: PRODUCT, version: VERSION });
+      return json({ ok: true, author: "Aziel Eliab", product: PRODUCT, version: VERSION });
     }
+  if ((path === "/v1/example" || path === "/v1/example/") && (request.method === "GET" || request.method === "HEAD")) {
+    return json({
+      ok: true,
+      product: PRODUCT,
+      author: "Aziel Eliab",
+      example: EXAMPLE_PAYLOAD,
+      note: "Sample payload only. Does not increment downloads.",
+    });
+  }
+
     if (path === "/v1/skill" && request.method === "GET") {
       return new Response(SKILL, {
       status: 200,

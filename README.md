@@ -147,6 +147,9 @@ shadowlock doctor --verify
 
 ## Use with Grok, ChatGPT, Venice
 
+- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json
+- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`
+
 Live HTTPS runtime on the download-tracker Worker. Zero-retention: `/v1` does not write KV except existing download keys.
 
 OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json
