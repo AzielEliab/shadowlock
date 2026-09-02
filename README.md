@@ -160,6 +160,17 @@ curl -sS -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.w
   }'
 ```
 
+## Cite this
+
+Aziel Eliab. ShadowLock. https://github.com/AzielEliab/shadowlock. https://shadowlock-download-tracker.vibelock.workers.dev. https://doi.org/10.5281/zenodo.21435707.
+
+- Catalog: https://aziel-runtime.vibelock.workers.dev/
+- Worker homepage: https://shadowlock-download-tracker.vibelock.workers.dev/
+- Counted download (gzip HTTP 200, no 302): https://shadowlock-download-tracker.vibelock.workers.dev/download
+- GitHub: https://github.com/AzielEliab/shadowlock
+- Citation JSON: https://shadowlock-download-tracker.vibelock.workers.dev/cite.json
+- DOI: https://doi.org/10.5281/zenodo.21435707
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
