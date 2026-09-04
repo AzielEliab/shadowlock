@@ -22,6 +22,7 @@ PLAIN = {
     "identity": "Author is Aziel Eliab",
     "json import/export": "Can read and write a JSON file",
     "loopback": "Local page stays on this computer",
+    "azos hook": "AZ-OS hook is ethics-gated observation",
     "verify": "A sample job can be compared without keeping names",
 }
 
@@ -97,6 +98,37 @@ def _check_loopback() -> Check:
     return _ok("loopback", f"{host}:{port}")
 
 
+def _check_azos_hook() -> Check:
+    from shadowlock.azos_hook import PROTOCOL, LocalObserver
+    from shadowlock.ethics import MOTTO, evaluate_ethics
+
+    if PROTOCOL != "azos-shadowlock-hook/1":
+        return _fail("azos hook", "unexpected protocol")
+    result = evaluate_ethics(None)
+    if not result.passed:
+        return _fail("azos hook", "default observe proposal refused")
+    if MOTTO != "Integrity precedes execution.":
+        return _fail("azos hook", "motto mismatch")
+    try:
+        observer = LocalObserver()
+        receipt = observer.attach(live=False, extra_jobs=[
+            {
+                "id": "doctor-azos",
+                "task_class": "repair",
+                "urgency": 0.5,
+                "actual_duration": 40,
+                "actual_cost": 90,
+                "actual_revenue": 220,
+                "actual_outcome": "complete",
+            }
+        ])
+    except Exception as exc:  # noqa: BLE001
+        return _fail("azos hook", str(exc))
+    if not receipt.attached:
+        return _fail("azos hook", "offline attach failed")
+    return _ok("azos hook", PROTOCOL)
+
+
 def _check_verify() -> Check:
     from shadowlock.adapters import MemoryAdapter
     from shadowlock.session import ShadowLockSession
@@ -133,6 +165,7 @@ CHECKS: tuple[Callable[[], Check], ...] = (
     _check_identity,
     _check_json_roundtrip,
     _check_loopback,
+    _check_azos_hook,
 )
 
 
@@ -148,6 +181,7 @@ def format_human(results: list[dict], *, ok: bool, version: str) -> str:
     if ok:
         lines.append(
             "All good. ShadowLock looks at jobs you already have. "
+            "It OS-hooks into AZ-OS under ethics policy. "
             "It does not run them, save people, or talk to the internet."
         )
     else:

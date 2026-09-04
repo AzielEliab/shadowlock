@@ -17,3 +17,11 @@ class SessionForgottenError(ShadowLockError):
 
 class AirgapError(ShadowLockError):
     """Raised when --airgap is set but proxy environment variables are present."""
+
+
+class EthicsError(ShadowLockError):
+    """Raised when the AZ-OS ethics policy refuses an observation."""
+
+
+class HookError(ShadowLockError):
+    """Raised when the AZ-OS hook cannot attach or exchange a frame."""

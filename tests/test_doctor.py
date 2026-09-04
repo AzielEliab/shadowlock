@@ -36,6 +36,7 @@ def test_doctor_json(capsys) -> None:
     names = {c["name"] for c in data["checks"]}
     assert "identity" in names
     assert "verify" in names
+    assert "azos hook" in names
     assert all(c["ok"] for c in data["checks"])
 
 

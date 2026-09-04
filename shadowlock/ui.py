@@ -114,11 +114,12 @@ PAGE = r"""<!DOCTYPE html>
     <h1>ShadowLock</h1>
     <p class="motto">Change is optional. Truth is not.</p>
     <p class="lede">
-      Import a job file you already have. The page compares it to a guess,
-      shows money made / lost / left on the table, and forgets the file.
-      Bound to 127.0.0.1 only. Nothing is written to disk.
+      Import a job file you already have, or attach via AZ-OS.
+      The page compares it to a guess, shows money made / lost / left on
+      the table, and forgets the file. Bound to 127.0.0.1 only. Nothing
+      is written to disk.
     </p>
-    <p class="limit">This is a comparison, not a dispatcher, optimizer, scheduler, or truth score.</p>
+    <p class="limit">OS-hooks into AZ-OS for process/job observation under ethics policy. This is a comparison, not a dispatcher, optimizer, scheduler, or truth score.</p>
   </header>
 
   <form id="mirror-form" autocomplete="off">
@@ -140,6 +141,7 @@ PAGE = r"""<!DOCTYPE html>
     </fieldset>
     <div class="actions">
       <button type="submit" id="run">Show report</button>
+      <button type="button" class="ghost" id="attach">Attach via AZ-OS</button>
       <button type="button" class="ghost" id="sample">Load sample</button>
       <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
     </div>
@@ -164,7 +166,7 @@ PAGE = r"""<!DOCTYPE html>
 
   <footer>
     <p>Apache-2.0 · Aziel Eliab · July 2026 · Bound to 127.0.0.1 · <code>shadowlock ui</code></p>
-    <p class="foot-note">Zero-retention: uploads stay in this process and are not written to disk.</p>
+    <p class="foot-note">Zero-retention: uploads stay in this process and are not written to disk. AZ-OS hook is ethics-gated observation, not process control.</p>
   </footer>
 <script>
 (function () {
@@ -240,6 +242,44 @@ PAGE = r"""<!DOCTYPE html>
       runMirror(observed, counterfactual);
     };
     reader.readAsText(f);
+  });
+  $("attach").addEventListener("click", async () => {
+    $("err").hidden = true;
+    $("attach").disabled = true;
+    let observed = {}, counterfactual = {};
+    try {
+      observed = JSON.parse($("observed").value || "{}");
+      counterfactual = JSON.parse($("counterfactual").value || "{}");
+    } catch (e) { observed = {}; counterfactual = {}; }
+    try {
+      const body = { ethics: { actor: "operator" } };
+      if (observed && typeof observed === "object" && Object.keys(observed).length) {
+        body.jobs = [observed];
+        body.counterfactual = counterfactual;
+      }
+      const res = await fetch("/api/attach", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+      if (data.report) render(data);
+      else {
+        $("result").hidden = false;
+        $("plain").textContent = data.attached
+          ? "Attached via AZ-OS. Ethics passed. No jobs sampled yet."
+          : "AZ-OS attach did not complete.";
+        $("summary").innerHTML =
+          "<dt>attached</dt><dd>" + (data.attached ? "yes" : "no") + "</dd>" +
+          "<dt>protocol</dt><dd>" + (data.protocol || "—") + "</dd>" +
+          "<dt>ethics</dt><dd>" + ((data.ethics && data.ethics.passed) ? "passed" : "refused") + "</dd>";
+        $("json").textContent = JSON.stringify(data, null, 2);
+        last = data;
+        $("export").disabled = false;
+      }
+    } catch (e) { fail(String(e.message || e)); }
+    finally { $("attach").disabled = false; }
   });
   $("sample").addEventListener("click", () => {
     $("observed").value = JSON.stringify(SAMPLE_OBS, null, 2);
@@ -323,7 +363,41 @@ def _observe_pair(observed: dict[str, Any], counterfactual: dict[str, Any]) -> d
         "author": "Aziel Eliab",
         "product": "ShadowLock",
         "version": __version__,
+        "azos_hook": True,
     }
+
+
+def _handle_hook(body: dict[str, Any]) -> dict[str, Any]:
+    """Ethics-gated AZ-OS attach on loopback. Optional jobs in the body."""
+    from shadowlock.azos_hook import LocalObserver, records_from_frame
+    from shadowlock.errors import EthicsError, HookError
+
+    ethics = body.get("ethics") if isinstance(body.get("ethics"), dict) else None
+    jobs = records_from_frame(body)
+    host = str(body.get("host") or "127.0.0.1")
+    port = int(body.get("port") or 8800)
+    live = bool(body.get("live", True))
+    observer = LocalObserver(host=host, port=port)
+    try:
+        receipt = observer.attach(ethics=ethics, extra_jobs=jobs, live=live)
+    except (EthicsError, HookError) as exc:
+        return {
+            "ok": False,
+            "attached": False,
+            "error": str(exc),
+            "author": "Aziel Eliab",
+            "product": "ShadowLock",
+            "version": __version__,
+            "azos_hook": True,
+        }
+    out = receipt.as_dict()
+    out["version"] = __version__
+    if receipt.jobs:
+        observed = receipt.jobs[0]
+        counterfactual = body.get("counterfactual") if isinstance(body.get("counterfactual"), dict) else {}
+        paired = _observe_pair(observed, counterfactual)
+        out.update(paired)
+    return out
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -369,7 +443,18 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
             return
         if path == "/health":
-            self._json(200, {"ok": True, "bind_host": DEFAULT_HOST, "name": "ShadowLock", "author": "Aziel Eliab"})
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "bind_host": DEFAULT_HOST,
+                    "name": "ShadowLock",
+                    "author": "Aziel Eliab",
+                    "azos_hook": True,
+                    "ethics": "Integrity precedes execution.",
+                    "version": __version__,
+                },
+            )
             return
         self._json(404, {"error": "not found"})
 
@@ -378,22 +463,28 @@ class Handler(BaseHTTPRequestHandler):
             self._json(403, {"error": "loopback only"})
             return
         path = urlparse(self.path).path
-        if path != "/api/observe":
-            self._json(404, {"error": "not found"})
+        if path == "/api/observe":
+            try:
+                body = self._read_json()
+                observed = body.get("observed")
+                counterfactual = body.get("counterfactual")
+                if not isinstance(observed, dict):
+                    self._json(400, {"error": "observed must be a JSON object"})
+                    return
+                if not isinstance(counterfactual, dict):
+                    self._json(400, {"error": "counterfactual must be a JSON object"})
+                    return
+                self._json(200, _observe_pair(observed, counterfactual))
+            except Exception as exc:  # noqa: BLE001
+                self._json(400, {"error": str(exc)})
             return
-        try:
-            body = self._read_json()
-            observed = body.get("observed")
-            counterfactual = body.get("counterfactual")
-            if not isinstance(observed, dict):
-                self._json(400, {"error": "observed must be a JSON object"})
-                return
-            if not isinstance(counterfactual, dict):
-                self._json(400, {"error": "counterfactual must be a JSON object"})
-                return
-            self._json(200, _observe_pair(observed, counterfactual))
-        except Exception as exc:  # noqa: BLE001
-            self._json(400, {"error": str(exc)})
+        if path in ("/api/attach", "/api/hook"):
+            try:
+                self._json(200, _handle_hook(self._read_json()))
+            except Exception as exc:  # noqa: BLE001
+                self._json(400, {"error": str(exc)})
+            return
+        self._json(404, {"error": "not found"})
 
 
 def make_server(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:

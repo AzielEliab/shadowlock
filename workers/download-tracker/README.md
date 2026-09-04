@@ -10,5 +10,6 @@ GET `/download` increments **downloads**.
 `/v1` never increments DOWNLOADS KV.
 GET `/install.sh` one-click install (does not increment; script curls `/download`).
 GET `/v1/skill` returns skill markdown (`text/markdown`). Does not increment views or downloads.
+POST `/v1/hook` is an ethics-gated AZ-OS hook frame. Does not increment views or downloads.
 
 Host: https://shadowlock-download-tracker.vibelock.workers.dev

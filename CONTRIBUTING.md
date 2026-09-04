@@ -55,7 +55,12 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
 - Session / forget: `shadowlock/session.py`
 - Report: `shadowlock/report.py`
 - CLI: `shadowlock/cli.py`
+- AZ-OS ethics policy: `shadowlock/ethics.py`
+- AZ-OS hook / local observer: `shadowlock/azos_hook.py`
 - New behavior needs a test that fails without the change.
+
+AZ-OS hook is read-only observation under ethics policy. Do not add
+ptrace, kernel interceptors, process kill, or write-back through the hook.
 
 ## Reporting downloads from a fork
 

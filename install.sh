@@ -4,7 +4,7 @@
 set -euo pipefail
 
 HOST="${SHADOWLOCK_HOME_HOST:-https://shadowlock-download-tracker.vibelock.workers.dev}"
-ASSET="${SHADOWLOCK_HOME_ASSET:-shadowlock-0.1.0.tar.gz}"
+ASSET="${SHADOWLOCK_HOME_ASSET:-shadowlock-0.2.0.tar.gz}"
 WORKDIR="${SHADOWLOCK_HOME:-$HOME/shadowlock}"
 
 mkdir -p "$WORKDIR"
@@ -28,5 +28,6 @@ python -m pip install -e .
 echo
 echo "Installed ShadowLock."
 echo "Run:  shadowlock ui"
+echo "Or:   shadowlock attach   # OS-hook into AZ-OS (127.0.0.1:8800)"
 echo "Then open http://127.0.0.1:8764  (loopback only)"
 echo "Author: Aziel Eliab."

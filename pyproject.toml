@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shadowlock"
-version = "0.1.0"
-description = "Read-only, zero-retention, software-agnostic outcome mirror for operational decision systems (ShadowLock, July 2026). Observes; does not control."
+version = "0.2.0"
+description = "Read-only, zero-retention outcome mirror. OS-hooks into AZ-OS for process/job observation under ethics policy (ShadowLock, Aziel Eliab). Observes; does not control."
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [{name = "Aziel Eliab"}]

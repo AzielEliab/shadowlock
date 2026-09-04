@@ -40,7 +40,18 @@ _WRITE_NAMES = frozenset(
     }
 )
 
-_ID_KEYS = ("id", "job_id", "jobId", "raw_id", "ticket", "ticket_id", "work_order")
+_ID_KEYS = (
+    "id",
+    "job_id",
+    "jobId",
+    "raw_id",
+    "ticket",
+    "ticket_id",
+    "work_order",
+    "pid",
+    "process_id",
+    "process",
+)
 _TS_KEYS = ("timestamp", "ts", "created_at", "time", "opened_at")
 _CLASS_KEYS = ("task_class", "class", "type", "job_type", "category")
 _URGENCY_KEYS = ("urgency", "priority")

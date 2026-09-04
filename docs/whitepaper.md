@@ -132,8 +132,19 @@ host records ──► read-only adapter ──► JobEnvelope (anonymous)
 ```
 
 The session is the process. It is created, it observes an adapter, it
-returns a `Report`, it forgets. It does not daemonize. It does not
-open a port. It does not create a data directory.
+returns a `Report`, it forgets. It does not daemonize. The optional
+localhost UI and AZ-OS hook bind loopback only. It does not create a
+data directory.
+
+### 3.0 AZ-OS hook
+
+ShadowLock OS-hooks into **AZ-OS** for process/job observation under
+ethics policy. Integrity precedes execution. The hook is an IPC/API
+attach to AZ Interface (`127.0.0.1:8800`) plus an optional Unix-domain
+JSON frame. Five gates (definition, evidence, impact, integrity,
+responsibility) must pass before attach. Observation is read-only:
+no kernel intercept, no ptrace, no dispatch, no process control.
+Hosted AZ-OS `/v1` remains overlay labels, not a remote shell.
 
 ### 3.1 JobEnvelope
 
@@ -160,6 +171,7 @@ look like emails are dropped from `context_signals`.
 - `MemoryAdapter` — in-memory list of mappings.
 - `JsonlAdapter` — read-only JSONL file.
 - `CsvAdapter` — read-only CSV file with a header row.
+- `AzosHookAdapter` — jobs/processes already collected through an AZ-OS attach.
 
 Field aliases (`job_id`, `ticket`, `priority`, `revenue`, …) are
 accepted so a host export does not have to be rewritten. Two adapters
@@ -277,6 +289,8 @@ The CLI:
 
 ```
 shadowlock version
+shadowlock attach
+shadowlock observe --azos --stdout
 shadowlock observe --in jobs.jsonl --format jsonl|csv --out report.json
 shadowlock observe --in jobs.jsonl --stdout
 ```
@@ -353,6 +367,7 @@ ShadowLock is **not**:
 - a database, warehouse, or audit log of jobs;
 - a replacement for the operational system it mirrors;
 - a network service, API gateway, or FastAPI app;
+- a kernel hook, ptrace injector, or process controller;
 - a way to identify, contact, or evaluate a named person.
 
 If a fork adds any of those, it has left this spec.

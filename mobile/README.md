@@ -23,6 +23,7 @@ Xcode.
 
 ## Honest scope
 
+OS-hooks into AZ-OS for process/job observation under ethics policy.
 Not a dispatcher, optimizer, scheduler, or learning system. Does not write back to a host.
 
 ## Desktop package (counted download)
