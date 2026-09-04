@@ -54,7 +54,7 @@ def test_help_lists_doctor_import_export() -> None:
     assert "import" in text
     assert "export" in text
     assert "attach" in text
-    assert "azos" in text
+    assert "AZ-OS" in text
 
 
 def test_cli_observe_requires_in_or_azos(capsys) -> None:

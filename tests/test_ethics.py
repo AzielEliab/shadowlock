@@ -36,6 +36,11 @@ def test_banned_impact_denied() -> None:
     assert result.gates["impact"].passed is False
 
 
+def test_honest_no_control_impact_still_passes() -> None:
+    result = evaluate_ethics({**DEFAULT_OBSERVE_PROPOSAL, "impact": "No host writes and no process control; anonymous aggregates only."})
+    assert result.passed is True
+
+
 def test_missing_actor_denied() -> None:
     result = evaluate_ethics({**DEFAULT_OBSERVE_PROPOSAL, "actor": ""})
     assert result.passed is False

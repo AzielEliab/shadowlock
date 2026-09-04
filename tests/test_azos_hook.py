@@ -130,7 +130,7 @@ def test_live_attach_against_fake_azos(fake_azos) -> None:
     assert receipt.attached is True
     assert receipt.azos.get("overlay") == "AZ-OS"
     assert receipt.token_preview
-    assert receipt.job_count >= 1
+    assert len(receipt.jobs) >= 1
     data = receipt.as_dict()
     assert data["kernel"] is False
     assert data["intercepts_caller_os"] is False

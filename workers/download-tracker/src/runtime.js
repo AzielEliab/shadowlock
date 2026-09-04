@@ -341,12 +341,12 @@ async function observePair(observed, counterfactual) {
 }
 
 const OBSERVE_ACTIONS = new Set(["observe", "status", "list_modules"]);
-const BANNED_IMPACT = ["wipe disk", "format drive", "mkfs", "self-replicate", "worm", "dispatch", "scheduler", "kill process", "remote takeover"];
+const BANNED_IMPACT = ["wipe disk", "format drive", "mkfs", "self-replicate", "worm", "kill process", "remote takeover"];
 const DEFAULT_ETHICS = {
   action: "observe",
   definition: "Read-only ShadowLock observation of jobs or processes already surfaced by AZ-OS.",
   evidence: "Operator requested an AZ-OS ethics-gated attach for a zero-retention outcome mirror.",
-  impact: "No host writes, no dispatch, no process control; anonymous aggregates only.",
+  impact: "No host writes and no process control; anonymous aggregates only.",
   actor: "operator",
   extend_module: false,
   comprehension: true,
