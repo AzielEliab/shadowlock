@@ -4,10 +4,12 @@
  * POST /v1/observe {observed, counterfactual}.
  */
 const PRODUCT = "shadowlock";
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 const MOTTO = "Change is optional. Truth is not.";
+const ETHICS_MOTTO = "Integrity precedes execution.";
+const HOOK_PROTOCOL = "azos-shadowlock-hook/1";
 const HOST = "https://shadowlock-download-tracker.vibelock.workers.dev";
-const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. Change is optional. Truth is not. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. Change is optional. Truth is not.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual}. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nGrok: import the catalog OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\n```\n\nThen open http://127.0.0.1:8764 (this computer only).\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. THIS IS NOT: a people profiler, PII store, or truth score. Zero-retention on /v1. Author Aziel Eliab.\n\nDOI: https://doi.org/10.5281/zenodo.21435707  \nRecord: https://zenodo.org/records/21435707\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n";
+const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual}. Not stored. |\n| POST | `/v1/hook` | Ethics-gated AZ-OS hook frame. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/hook \\\n  -H 'content-type: application/json' \\\n  -d '{\"jobs\":[{\"id\":\"job-1\",\"task_class\":\"repair\",\"actual_outcome\":\"complete\"}]}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nGrok: import the catalog OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\nshadowlock attach\n```\n\nThen open http://127.0.0.1:8764 (this computer only). AZ-OS: `azos ui` at http://127.0.0.1:8800.\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. OS-hooks into AZ-OS under ethics policy. THIS IS NOT: a people profiler, PII store, truth score, kernel hook, or process controller. Zero-retention on /v1. Author Aziel Eliab.\n\nDOI: https://doi.org/10.5281/zenodo.21435707  \nRecord: https://zenodo.org/records/21435707\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n\n## Catalog + local UI\n\nAuthor: **Aziel Eliab**. Honest scope: OS-hooks into AZ-OS for process/job observation under ethics policy.\n\n- Catalog product: https://aziel-runtime.vibelock.workers.dev/p/shadowlock/\n- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json\n- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n- This Worker skill: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`\n- This Worker OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json\n\nLocal UI: **Import JSON file** or **Attach via AZ-OS**, then **Export JSON**. Then `shadowlock doctor`.\n";
 
 const HASHED_ID_HEX_LEN = 12;
 const PII_KEYS = new Set([
@@ -16,7 +18,7 @@ const PII_KEYS = new Set([
   "worker","worker_name","assignee","assignee_name","employee","employee_name","username","ssn",
   "address","operator","operator_name",
 ]);
-const ID_KEYS = ["id","job_id","jobId","raw_id","ticket","ticket_id","work_order"];
+const ID_KEYS = ["id","job_id","jobId","raw_id","ticket","ticket_id","work_order","pid","process_id","process"];
 const TS_KEYS = ["timestamp","ts","created_at","time","opened_at"];
 const CLASS_KEYS = ["task_class","class","type","job_type","category"];
 const URGENCY_KEYS = ["urgency","priority"];
@@ -338,13 +340,71 @@ async function observePair(observed, counterfactual) {
   };
 }
 
+const OBSERVE_ACTIONS = new Set(["observe", "status", "list_modules"]);
+const BANNED_IMPACT = ["wipe disk", "format drive", "mkfs", "self-replicate", "worm", "dispatch", "scheduler", "kill process", "remote takeover"];
+const DEFAULT_ETHICS = {
+  action: "observe",
+  definition: "Read-only ShadowLock observation of jobs or processes already surfaced by AZ-OS.",
+  evidence: "Operator requested an AZ-OS ethics-gated attach for a zero-retention outcome mirror.",
+  impact: "No host writes, no dispatch, no process control; anonymous aggregates only.",
+  actor: "operator",
+  extend_module: false,
+  comprehension: true,
+  intent: "Observe finished jobs through AZ-OS under Integrity precedes execution.",
+};
+
+function filled(value, minimum = 8) {
+  return typeof value === "string" && value.trim().length >= minimum;
+}
+
+function evaluateEthics(raw) {
+  const src = { ...DEFAULT_ETHICS, ...(raw && typeof raw === "object" ? raw : {}) };
+  const action = String(src.action || "").trim();
+  const gates = {};
+  if (!action) gates.definition = { pass: false, reason: "action name is required" };
+  else if (!filled(src.definition)) gates.definition = { pass: false, reason: "definition must state what the action is (min 8 chars)" };
+  else gates.definition = { pass: true, reason: "action is defined" };
+  if (!filled(src.evidence)) gates.evidence = { pass: false, reason: "evidence / justification is required (min 8 chars)" };
+  else gates.evidence = { pass: true, reason: "evidence provided" };
+  const impact = String(src.impact || "").toLowerCase();
+  if (!filled(src.impact)) gates.impact = { pass: false, reason: "impact must state what will change (min 8 chars)" };
+  else if (BANNED_IMPACT.some((b) => impact.includes(b))) gates.impact = { pass: false, reason: "impact violates overlay bounds" };
+  else gates.impact = { pass: true, reason: "impact stated" };
+  let integrityOk = OBSERVE_ACTIONS.has(action);
+  let integrityReason = integrityOk ? "action is a registered observation" : "unsigned / unregistered action: default deny";
+  if (src.extend_module && !src.comprehension) {
+    integrityOk = false;
+    integrityReason = "extending a module requires the comprehension checkbox";
+  }
+  gates.integrity = { pass: integrityOk, reason: integrityReason };
+  const actor = String(src.actor || "").trim();
+  if (!actor) gates.responsibility = { pass: false, reason: "a named actor is required" };
+  else gates.responsibility = { pass: true, reason: `actor '${actor}' is named (name is not a privilege)` };
+  const passed = Object.values(gates).every((g) => g.pass);
+  return { passed, motto: ETHICS_MOTTO, author: "Aziel Eliab", product: PRODUCT, gates };
+}
+
+function recordsFromFrame(body) {
+  const out = [];
+  for (const key of ["jobs", "processes", "records"]) {
+    const block = body[key];
+    if (Array.isArray(block)) {
+      for (const rec of block) {
+        if (rec && typeof rec === "object" && !Array.isArray(rec)) out.push(rec);
+      }
+    }
+  }
+  if (body.observed && typeof body.observed === "object" && !Array.isArray(body.observed)) out.push(body.observed);
+  return out;
+}
+
 function openapiSpec() {
   return {
     openapi: "3.1.0",
     info: {
       title: "ShadowLock runtime",
       version: VERSION,
-      description: "Read-only zero-retention outcome mirror. " + MOTTO,
+      description: "Read-only zero-retention outcome mirror. OS-hooks into AZ-OS under ethics policy. " + MOTTO,
     },
     servers: [{ url: HOST }],
     paths: {
@@ -358,6 +418,30 @@ function openapiSpec() {
       },
 "/v1/health": {
         get: { operationId: "health", summary: "Liveness", responses: { "200": { description: "ok", content: { "application/json": { schema: { type: "object" } } } } } },
+      },
+      "/v1/hook": {
+        post: {
+          operationId: "shadowlock_hook",
+          summary: "Ethics-gated AZ-OS hook frame. Observe posted jobs/processes. Zero-retention.",
+          requestBody: {
+            required: false,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    ethics: { type: "object" },
+                    jobs: { type: "array", items: { type: "object" } },
+                    processes: { type: "array", items: { type: "object" } },
+                    observed: { type: "object" },
+                    counterfactual: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+          responses: { "200": { description: "hook receipt", content: { "application/json": { schema: { type: "object" } } } } },
+        },
       },
       "/v1/observe": {
         post: {
@@ -422,7 +506,16 @@ export async function handleRuntimeApi(request, url) {
   if (!isApi) return null;
   try {
     if (path === "/v1/health" && request.method === "GET") {
-      return json({ ok: true, product: PRODUCT, version: VERSION });
+      return json({
+        ok: true,
+        author: "Aziel Eliab",
+        product: PRODUCT,
+        version: VERSION,
+        azos_hook: true,
+        protocol: HOOK_PROTOCOL,
+        ethics: ETHICS_MOTTO,
+        motto: MOTTO,
+      });
     }
     if (path === "/v1/skill" && request.method === "GET") {
       return new Response(SKILL, {
@@ -444,6 +537,44 @@ export async function handleRuntimeApi(request, url) {
         return json({ error: "counterfactual must be a JSON object" }, 400);
       }
       return json(await observePair(body.observed, body.counterfactual));
+    }
+    if (path === "/v1/hook" && request.method === "POST") {
+      let body;
+      try { body = await request.json(); } catch { body = {}; }
+      if (!body || typeof body !== "object" || Array.isArray(body)) body = {};
+      const ethics = evaluateEthics(body.ethics);
+      if (!ethics.passed) {
+        return json({
+          ok: false,
+          attached: false,
+          protocol: HOOK_PROTOCOL,
+          author: "Aziel Eliab",
+          product: PRODUCT,
+          version: VERSION,
+          ethics,
+          error: "ethics policy refused this observation",
+          kernel: false,
+          intercepts_caller_os: false,
+        }, 403);
+      }
+      const jobs = recordsFromFrame(body);
+      let observed = null;
+      if (jobs.length) observed = await observePair(jobs[0], body.counterfactual && typeof body.counterfactual === "object" ? body.counterfactual : {});
+      return json({
+        ok: true,
+        attached: true,
+        protocol: HOOK_PROTOCOL,
+        author: "Aziel Eliab",
+        product: PRODUCT,
+        version: VERSION,
+        motto: MOTTO,
+        ethics,
+        job_count: jobs.length,
+        kernel: false,
+        intercepts_caller_os: false,
+        note: "Hosted hook is an ethics-gated overlay receipt, not a kernel and not the caller OS.",
+        ...(observed || {}),
+      });
     }
     return json({ error: "not found" }, 404);
   } catch (err) {

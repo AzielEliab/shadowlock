@@ -94,8 +94,9 @@ class _MirrorPageState extends State<MirrorPage> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Zero-retention outcome mirror. Nothing is stored. Not a dispatcher, '
-            'optimizer, scheduler, or learning system.',
+            'Zero-retention outcome mirror. OS-hooks into AZ-OS under ethics '
+            'policy. Nothing is stored. Not a dispatcher, optimizer, scheduler, '
+            'or learning system.',
           ),
           const SizedBox(height: 16),
           TextField(

@@ -1,6 +1,7 @@
 # ShadowLock
 
 Looks at jobs you already finished and compares them to a guess.
+It **OS-hooks into AZ-OS** for process/job observation under ethics policy.
 It does **not** run jobs, save people, or send anything to the internet.
 
 **Author:** Aziel Eliab
@@ -24,7 +25,7 @@ How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 1. Install: `python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"`
 2. Open the local page: `shadowlock ui`
-3. At http://127.0.0.1:8764, tap **Import JSON file**, then **Show report**. Tap **Export JSON report** to save. Optional check: `shadowlock doctor --verify`.
+3. At http://127.0.0.1:8764, tap **Import JSON file** or **Attach via AZ-OS**, then **Show report**. Tap **Export JSON report** to save. Optional check: `shadowlock doctor --verify`.
 
 Loopback only (`127.0.0.1`). No CDN, no telemetry.
 
@@ -36,7 +37,7 @@ curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh |
 
 The script curls the **counted** tarball from this project's Worker
 (`/download`, User-Agent `Mozilla/5.0`), extracts, makes a venv, and
-`pip install -e .`. Then run `shadowlock ui`.
+`pip install -e .`. Then run `shadowlock ui` or `shadowlock attach`.
 
 Or tap **Download** / **One-click install** on the Worker homepage:
 https://shadowlock-download-tracker.vibelock.workers.dev/
@@ -47,7 +48,7 @@ https://shadowlock-download-tracker.vibelock.workers.dev/
 The Worker serves the gzip itself (HTTP 200, no 302 to GitHub).
 
 - Homepage: [https://shadowlock-download-tracker.vibelock.workers.dev/](https://shadowlock-download-tracker.vibelock.workers.dev/)
-- Direct tarball: [shadowlock-0.1.0.tar.gz](https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.1.0.tar.gz)
+- Direct tarball: [shadowlock-0.2.0.tar.gz](https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.2.0.tar.gz)
 - One-click install: [https://shadowlock-download-tracker.vibelock.workers.dev/install.sh](https://shadowlock-download-tracker.vibelock.workers.dev/install.sh)
 - Skill: [https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill](https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill)
 - OpenAPI: [https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json](https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json)
@@ -65,7 +66,7 @@ Isolated counter: Worker `shadowlock-download-tracker`, KV `SHADOWLOCK_DOWNLOADS
 5. **Report** anonymous aggregates and `sha256` hex[:12] ids.
 6. **Forget.** `forget()` or leaving the context manager drops every held payload. No `.shadowlock` store.
 
-Use as a gate on an outcome you already have. ShadowLock has no OS hook: you pass it a job file (`shadowlock observe --in jobs.jsonl --stdout`). It does not intercept processes.
+ShadowLock **OS-hooks into AZ-OS** for process/job observation under ethics policy (`Integrity precedes execution.`). File observe still works (`shadowlock observe --in jobs.jsonl --stdout`). `shadowlock attach` and `shadowlock observe --azos` attach to local AZ Interface on `127.0.0.1:8800`. The hook is read-only: it does not intercept the caller kernel, ptrace, dispatch, or kill processes.
 
 ## CLI
 
@@ -77,17 +78,21 @@ shadowlock doctor --verify
 shadowlock import examples/job.json
 shadowlock export report.json
 
+shadowlock attach
+shadowlock observe --azos --stdout
 shadowlock observe --in jobs.jsonl --format jsonl --out report.json
 shadowlock observe --in jobs.jsonl --stdout
 shadowlock observe --in jobs.csv --format csv --stdout
 shadowlock observe --in jobs.jsonl --stdout --airgap
+shadowlock observe --azos --in jobs.jsonl --stdout
 ```
 
 `--out` writes the anonymous summary JSON only (aggregates, hashed ids).
 Input files are opened read-only. `--airgap` refuses to run if
 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` (or lowercase) are set.
 `import` reads a JSON file you name. `export` writes a JSON file you name.
-Neither keeps a hidden copy.
+Neither keeps a hidden copy. `--azos` / `attach` talk to AZ-OS on loopback
+(or hosted overlay labels if you pass `--hosted`). `--airgap` refuses hosted.
 
 Library entry point:
 
@@ -121,7 +126,8 @@ python -m pytest -q
 Fixtures are synthetic. They cover read-only adapters, `forget()`,
 sampler determinism and ~20% rate, name/email non-leakage, ledger
 fields, counterfactual independence from actuals, CLI, doctor,
-import/export, no data directory, and hashed_id agreement across adapters.
+import/export, no data directory, hashed_id agreement across adapters,
+AZ-OS ethics gates, and the AZ-OS hook / local observer.
 
 ## iPhone & Android
 
@@ -141,7 +147,7 @@ The `android/` and `ios/` folders in this tree are skeleton READMEs until you ru
 Release artifacts are ordinary source tarballs, not a proprietary binary.
 
 ```bash
-sha256sum shadowlock-0.1.0.tar.gz
+sha256sum shadowlock-0.2.0.tar.gz
 shadowlock doctor --verify
 ```
 

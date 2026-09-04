@@ -14,7 +14,7 @@ import { handleRuntimeApi } from "./runtime.js";
  */
 
 const PROJECT = "shadowlock";
-const DEFAULT_ASSET = "shadowlock-0.1.0.tar.gz";
+const DEFAULT_ASSET = "shadowlock-0.2.0.tar.gz";
 const DEFAULT_OWNER = "AzielEliab";
 const DEFAULT_REPO = "shadowlock";
 const DEFAULT_BRANCH = "main";
@@ -270,6 +270,7 @@ python -m pip install -e .
 echo
 echo "Installed ShadowLock."
 echo "Run:  shadowlock ui"
+echo "Or:   shadowlock attach   # OS-hook into AZ-OS (127.0.0.1:8800)"
 echo "Then open http://127.0.0.1:8764  (loopback only)"
 echo "Author: Aziel Eliab."
 `;
@@ -335,7 +336,7 @@ async function indexHtml(env) {
 <body>
   <h1>ShadowLock</h1>
   <p class="motto">Change is optional. Truth is not. Author Aziel Eliab.</p>
-  <p class="banner">THIS IS: a read-only comparison of jobs you already have. THIS IS NOT: a dispatcher, optimizer, people profiler, or truth score. Zero-retention on /v1. Author Aziel Eliab.</p>
+  <p class="banner">THIS IS: a read-only comparison of jobs you already have. OS-hooks into AZ-OS for process/job observation under ethics policy. THIS IS NOT: a dispatcher, optimizer, people profiler, truth score, or kernel hook. Zero-retention on /v1. Author Aziel Eliab.</p>
   <div class="card">
     <div class="nums">
       <p class="count">${v}<span>Views</span></p>
@@ -347,7 +348,7 @@ async function indexHtml(env) {
       <button type="button" class="btn install" id="install-btn">One-click install</button>
     </div>
     <pre id="install-cmd">${INSTALL_LINE}</pre>
-    <p class="kid">Then run <code>shadowlock ui</code>, open http://127.0.0.1:8764 (this computer only), tap <strong>Import JSON file</strong>, then <strong>Export JSON report</strong> if you want to save.</p>
+    <p class="kid">Then run <code>shadowlock ui</code>, open http://127.0.0.1:8764 (this computer only), tap <strong>Import JSON file</strong> or <strong>Attach via AZ-OS</strong>, then <strong>Export JSON report</strong> if you want to save.</p>
     <p class="meta">The download count ticks on the Download click. The Worker serves the gzip (HTTP 200). No 302 to GitHub. Forks using this same link are counted automatically. ${DEFAULT_ASSET} — ${n} counted.</p>
     <p class="iso">Isolated counter: Worker <code>shadowlock-download-tracker</code>, project <code>${PROJECT}</code>, KV <code>SHADOWLOCK_DOWNLOADS</code>. Not mixed with any other product. /v1 does not increment downloads.</p>
     <p class="meta">GitHub: stars ${gh.stars || 0} · forks ${gh.forks || 0} · watchers ${gh.watchers || 0} · release assets ${gh.release_download_count || 0}</p>

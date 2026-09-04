@@ -53,3 +53,19 @@ def test_help_lists_doctor_import_export() -> None:
     assert "doctor" in text
     assert "import" in text
     assert "export" in text
+    assert "attach" in text
+    assert "azos" in text
+
+
+def test_cli_observe_requires_in_or_azos(capsys) -> None:
+    rc = main(["observe", "--stdout"])
+    assert rc == 2
+    err = capsys.readouterr().err
+    assert "--in" in err or "--azos" in err
+
+
+def test_cli_attach_without_azos_exits_2(jsonl_file: Path, capsys) -> None:
+    rc = main(["attach", "--host", "127.0.0.1", "--port", "1", "--in", str(jsonl_file)])
+    assert rc == 2
+    err = capsys.readouterr().err.lower()
+    assert "azos" in err or "attach" in err or "shadowlock" in err

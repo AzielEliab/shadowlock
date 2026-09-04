@@ -1,15 +1,15 @@
 ---
 name: ShadowLock
-description: Use when calling ShadowLock hosted /v1 or installing the local package. Author Aziel Eliab.
+description: Use when calling ShadowLock hosted /v1 or installing the local package. OS-hooks into AZ-OS for process/job observation under ethics policy. Author Aziel Eliab.
 ---
 
 # ShadowLock
 
-Looks at jobs you already have. Read-only. Zero retention. Author: **Aziel Eliab**.
+Looks at jobs you already have. Read-only. Zero retention. OS-hooks into **AZ-OS** under ethics policy. Author: **Aziel Eliab**.
 
-**THIS IS:** a read-only, zero-retention outcome mirror for operational decisions.
+**THIS IS:** a read-only, zero-retention outcome mirror that attaches to AZ-OS for process/job observation.
 
-**THIS IS NOT:** a dispatcher, optimizer, scheduler, predictor, people profiler, or truth score. Hosted `/v1` does not increment downloads or views.
+**THIS IS NOT:** a dispatcher, optimizer, scheduler, predictor, people profiler, truth score, kernel hook, or process controller. Hosted `/v1` does not increment downloads or views.
 
 Always send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.
 
@@ -22,8 +22,10 @@ Always send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent
 
 Ops (do **not** increment downloads or views):
 
-- `GET /v1/health` — liveness
+- `GET /v1/health` — liveness (includes `azos_hook`)
 - `GET /v1/skill` — this file
+- `POST /v1/observe` — observe `{observed, counterfactual}`
+- `POST /v1/hook` — ethics-gated AZ-OS hook frame
 - Product POSTs listed in OpenAPI
 
 Grok: import OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.
@@ -33,6 +35,9 @@ Grok: import OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.
 ```bash
 curl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health
 curl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill
+curl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/hook \
+  -H 'content-type: application/json' \
+  -d '{"jobs":[{"id":"job-1","task_class":"repair","actual_outcome":"complete"}]}'
 ```
 
 ## Local (after one-click install)
@@ -40,12 +45,13 @@ curl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.de
 ```bash
 curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash
 shadowlock ui
+shadowlock attach
 shadowlock doctor --verify
 ```
 
-Then open http://127.0.0.1:8764 (loopback only). Tap **Import JSON file**, then **Export JSON report**.
+Then open http://127.0.0.1:8764 (loopback only). Tap **Import JSON file** or **Attach via AZ-OS**, then **Export JSON report**. AZ-OS control surface: http://127.0.0.1:8800 (`azos ui`).
 
-Counted download (gzip HTTP 200, no 302): https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.1.0.tar.gz
+Counted download (gzip HTTP 200, no 302): https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.2.0.tar.gz
 GitHub: https://github.com/AzielEliab/shadowlock
 
 Paper: DOI https://doi.org/10.5281/zenodo.21435707 · https://zenodo.org/records/21435707 · Apache-2.0. Forks welcome.
