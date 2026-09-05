@@ -1,7 +1,7 @@
 /**
  * ShadowLock hosted runtime (port of envelope/sample/counterfactual/ledger/report).
  * Zero-retention: never write KV except existing download keys.
- * POST /v1/observe {observed, counterfactual}.
+ * POST /v1/observe {observed, counterfactual} or {jobs}.
  */
 const PRODUCT = "shadowlock";
 const VERSION = "0.2.0";
@@ -9,7 +9,7 @@ const MOTTO = "Change is optional. Truth is not.";
 const ETHICS_MOTTO = "Integrity precedes execution.";
 const HOOK_PROTOCOL = "azos-shadowlock-hook/1";
 const HOST = "https://shadowlock-download-tracker.vibelock.workers.dev";
-const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual}. Not stored. |\n| POST | `/v1/hook` | Ethics-gated AZ-OS hook frame. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/hook \\\n  -H 'content-type: application/json' \\\n  -d '{\"jobs\":[{\"id\":\"job-1\",\"task_class\":\"repair\",\"actual_outcome\":\"complete\"}]}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nGrok: import the catalog OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\nshadowlock attach\n```\n\nThen open http://127.0.0.1:8764 (this computer only). AZ-OS: `azos ui` at http://127.0.0.1:8800.\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. OS-hooks into AZ-OS under ethics policy. THIS IS NOT: a people profiler, PII store, truth score, kernel hook, or process controller. Zero-retention on /v1. Author Aziel Eliab.\n\nDOI: https://doi.org/10.5281/zenodo.21435707  \nRecord: https://zenodo.org/records/21435707\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n\n## Catalog + local UI\n\nAuthor: **Aziel Eliab**. Honest scope: OS-hooks into AZ-OS for process/job observation under ethics policy.\n\n- Catalog product: https://aziel-runtime.vibelock.workers.dev/p/shadowlock/\n- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json\n- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n- This Worker skill: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`\n- This Worker OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json\n\nLocal UI: **Import JSON file** or **Attach via AZ-OS**, then **Export JSON**. Then `shadowlock doctor`.\n";
+const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual} or {jobs}. Not stored. |\n| POST | `/v1/hook` | Ethics-gated AZ-OS hook frame. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/hook \\\n  -H 'content-type: application/json' \\\n  -d '{\"jobs\":[{\"id\":\"job-1\",\"task_class\":\"repair\",\"actual_outcome\":\"complete\"}]}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nGrok: import the catalog OpenAPI as a custom tool. ChatGPT: GPT Actions. Venice: HTTP tools.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\nshadowlock attach\n```\n\nThen open http://127.0.0.1:8764 (this computer only). AZ-OS: `azos ui` at http://127.0.0.1:8800.\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. OS-hooks into AZ-OS under ethics policy. THIS IS NOT: a people profiler, PII store, truth score, kernel hook, or process controller. Zero-retention on /v1. Author Aziel Eliab.\n\nHosted product UI: `GET https://shadowlock-download-tracker.vibelock.workers.dev/` — observe workspace + counted download.\n\nCitation: Eliab, Aziel. (2026). ShadowLock 0.2.0 [Software]. Apache-2.0. https://github.com/AzielEliab/shadowlock\n\nHistorical DOI 10.5281/zenodo.21435707 is tombstoned (Zenodo 410/404). Software deposit needed. No DOI invented.\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n\n## Catalog + local UI\n\nAuthor: **Aziel Eliab**. Honest scope: OS-hooks into AZ-OS for process/job observation under ethics policy.\n\n- Catalog product: https://aziel-runtime.vibelock.workers.dev/p/shadowlock/\n- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json\n- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n- This Worker skill: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`\n- This Worker OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json\n\nLocal UI: **Import JSON file** or **Attach via AZ-OS**, then **Export JSON**. Then `shadowlock doctor`.\n";
 
 const HASHED_ID_HEX_LEN = 12;
 const PII_KEYS = new Set([
@@ -333,10 +333,74 @@ async function observePair(observed, counterfactual) {
     product: PRODUCT,
     version: VERSION,
     motto: MOTTO,
+    author: "Aziel Eliab",
     report,
     expectation: exp,
     initiation: { task_class: env.task_class, urgency: env.urgency, context_signals: { ...env.context_signals } },
     hashed_id: env.hashed_id,
+  };
+}
+
+async function observeRecords(records, counterfactual) {
+  const jobs = (records || []).filter((r) => r && typeof r === "object" && !Array.isArray(r));
+  if (!jobs.length) {
+    throw new Error("observed must be a JSON object, or jobs a non-empty array");
+  }
+  const cf = counterfactual && typeof counterfactual === "object" && !Array.isArray(counterfactual) ? counterfactual : {};
+  if (jobs.length === 1) return observePair(jobs[0], cf);
+  const salt = "ui-session";
+  const ledger = { money_made: 0, money_lost: 0, money_left_on_table: 0, net_variance: 0, efficiency_score: 0, _efficiencies: [] };
+  const by_task_class = {};
+  const hashed = [];
+  let lastEnv = null;
+  let lastExp = null;
+  for (const rec of jobs) {
+    const env = await recordToEnvelope(rec, salt);
+    const priors = classPriors(cf, env.task_class);
+    const exp = computeExpectation({
+      task_class: env.task_class,
+      urgency: env.urgency,
+      history: [],
+      class_priors: priors,
+    });
+    ledgerAdd(ledger, env, exp);
+    by_task_class[env.task_class] = (by_task_class[env.task_class] || 0) + 1;
+    hashed.push(env.hashed_id);
+    lastEnv = env;
+    lastExp = exp;
+  }
+  const report = {
+    observed: jobs.length,
+    sampled: jobs.length,
+    sample_rate_target: 1.0,
+    sampled_hashed_ids: hashed,
+    ledger: {
+      money_made: round6(ledger.money_made),
+      money_lost: round6(ledger.money_lost),
+      money_left_on_table: round6(ledger.money_left_on_table),
+      net_variance: round6(ledger.net_variance),
+      efficiency_score: round6(ledger.efficiency_score),
+    },
+    by_task_class,
+    notes: [
+      "ShadowLock reports are anonymous aggregates.",
+      "Identifiers are sha256 hex[:12] only.",
+      "No person, team, or department names are emitted.",
+      "Zero-retention: this API does not write KV except existing download keys.",
+    ],
+  };
+  return {
+    product: PRODUCT,
+    version: VERSION,
+    motto: MOTTO,
+    author: "Aziel Eliab",
+    report,
+    expectation: lastExp,
+    initiation: lastEnv
+      ? { task_class: lastEnv.task_class, urgency: lastEnv.urgency, context_signals: { ...lastEnv.context_signals } }
+      : null,
+    hashed_id: hashed[hashed.length - 1] || null,
+    job_count: jobs.length,
   };
 }
 
@@ -446,17 +510,17 @@ function openapiSpec() {
       "/v1/observe": {
         post: {
           operationId: "observe",
-          summary: "Observe one {observed, counterfactual} pair. Returns report JSON. Zero-retention.",
+          summary: "Observe {observed, counterfactual} or {jobs}. Returns report JSON. Zero-retention.",
           requestBody: {
             required: true,
             content: {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["observed", "counterfactual"],
                   properties: {
                     observed: { type: "object" },
                     counterfactual: { type: "object" },
+                    jobs: { type: "array", items: { type: "object" } },
                   },
                 },
               },
@@ -530,13 +594,17 @@ export async function handleRuntimeApi(request, url) {
     if (path === "/v1/observe" && request.method === "POST") {
       let body;
       try { body = await request.json(); } catch { return json({ error: "JSON body required" }, 400); }
-      if (!body || typeof body.observed !== "object" || body.observed == null || Array.isArray(body.observed)) {
-        return json({ error: "observed must be a JSON object" }, 400);
+      if (!body || typeof body !== "object" || Array.isArray(body)) {
+        return json({ error: "JSON object required" }, 400);
       }
-      if (!body || typeof body.counterfactual !== "object" || body.counterfactual == null || Array.isArray(body.counterfactual)) {
-        return json({ error: "counterfactual must be a JSON object" }, 400);
+      const cf = body.counterfactual && typeof body.counterfactual === "object" && !Array.isArray(body.counterfactual)
+        ? body.counterfactual
+        : {};
+      const recs = recordsFromFrame(body);
+      if (!recs.length) {
+        return json({ error: "observed must be a JSON object, or jobs a non-empty array" }, 400);
       }
-      return json(await observePair(body.observed, body.counterfactual));
+      return json(await observeRecords(recs, cf));
     }
     if (path === "/v1/hook" && request.method === "POST") {
       let body;
@@ -559,7 +627,12 @@ export async function handleRuntimeApi(request, url) {
       }
       const jobs = recordsFromFrame(body);
       let observed = null;
-      if (jobs.length) observed = await observePair(jobs[0], body.counterfactual && typeof body.counterfactual === "object" ? body.counterfactual : {});
+      if (jobs.length) {
+        const cf = body.counterfactual && typeof body.counterfactual === "object" && !Array.isArray(body.counterfactual)
+          ? body.counterfactual
+          : {};
+        observed = await observeRecords(jobs, cf);
+      }
       return json({
         ok: true,
         attached: true,

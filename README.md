@@ -39,8 +39,10 @@ The script curls the **counted** tarball from this project's Worker
 (`/download`, User-Agent `Mozilla/5.0`), extracts, makes a venv, and
 `pip install -e .`. Then run `shadowlock ui` or `shadowlock attach`.
 
-Or tap **Download** / **One-click install** on the Worker homepage:
+Or open the hosted product UI (observe workspace + counted download):
 https://shadowlock-download-tracker.vibelock.workers.dev/
+
+Tap **Show report** to call `POST /v1/observe`. Tap **Download** / **One-click install** for the local package.
 
 ## Counted download (Cloudflare Worker)
 
