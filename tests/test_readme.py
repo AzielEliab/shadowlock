@@ -15,6 +15,43 @@ def test_skill_azos_hook_no_disclaimer() -> None:
     assert "azos-shadowlock-hook/1" in worker
 
 
+FULL_AI_CLIENTS = (
+    "ChatGPT (GPT Actions / OpenAI)",
+    "Grok (xAI)",
+    "Venice",
+    "Claude (Anthropic)",
+    "Cursor (MCP)",
+    "Glama (MCP)",
+    "Perplexity",
+    "Microsoft Copilot / Bing",
+    "Google Gemini / Vertex",
+    "Mistral",
+    "Meta AI",
+    "Apple Intelligence surfaces",
+    "Amazon Q tooling",
+    "DuckAssist",
+    "You.com",
+    "Cohere",
+)
+
+
+def test_readme_and_skill_list_full_ai_clients() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    skill = Path("SKILL.md").read_text(encoding="utf-8")
+    worker = Path("workers/download-tracker/src/runtime.js").read_text(encoding="utf-8")
+    page = Path("workers/download-tracker/src/page.js").read_text(encoding="utf-8")
+    assert "## Use with AI assistants" in readme
+    assert "## Use with Grok, ChatGPT, Venice" not in readme
+    assert "use with Grok, ChatGPT, Venice" not in worker
+    assert "Use with AI assistants" in worker
+    for client in FULL_AI_CLIENTS:
+        assert client in readme
+        assert client in skill
+        assert client in worker
+        assert client in page
+    assert "Aziel Eliab only" in readme or "Aziel Eliab" in readme
+
+
 def test_readme_three_steps_and_doi() -> None:
     text = Path("README.md").read_text(encoding="utf-8")
     assert "Aziel Eliab" in text
