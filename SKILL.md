@@ -19,12 +19,13 @@ Always send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent
 - Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json
 - MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`
 - Live skill (this markdown): `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`
+- Hosted product UI: `GET https://shadowlock-download-tracker.vibelock.workers.dev/` (observe workspace + counted download)
 
 Ops (do **not** increment downloads or views):
 
 - `GET /v1/health` — liveness (includes `azos_hook`)
 - `GET /v1/skill` — this file
-- `POST /v1/observe` — observe `{observed, counterfactual}`
+- `POST /v1/observe` — observe `{observed, counterfactual}` or `{jobs}`
 - `POST /v1/hook` — ethics-gated AZ-OS hook frame
 - Product POSTs listed in OpenAPI
 
@@ -54,4 +55,5 @@ Then open http://127.0.0.1:8764 (loopback only). Tap **Import JSON file** or **A
 Counted download (gzip HTTP 200, no 302): https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.2.0.tar.gz
 GitHub: https://github.com/AzielEliab/shadowlock
 
-Paper: DOI https://doi.org/10.5281/zenodo.21435707 · https://zenodo.org/records/21435707 · Apache-2.0. Forks welcome.
+Cite: Eliab, Aziel. (2026). ShadowLock 0.2.0 [Software]. Apache-2.0. https://github.com/AzielEliab/shadowlock
+Historical DOI https://doi.org/10.5281/zenodo.21435707 is tombstoned. Software deposit needed. No DOI invented. Apache-2.0. Forks welcome.

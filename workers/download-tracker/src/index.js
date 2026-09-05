@@ -1,4 +1,5 @@
 import { handleRuntimeApi } from "./runtime.js";
+import { handleSeo, indexHtml, serveSigil } from "./page.js";
 
 /**
  * ShadowLock download tracker (Cloudflare Worker).
@@ -22,10 +23,6 @@ const GITHUB_RELEASES = "https://github.com/AzielEliab/shadowlock/releases";
 const GITHUB_LATEST = "https://github.com/AzielEliab/shadowlock/releases/latest";
 const HOST = "https://shadowlock-download-tracker.vibelock.workers.dev";
 const GITHUB_REPO = "https://github.com/AzielEliab/shadowlock";
-const INSTALL_LINE = "curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash";
-const DOI = "https://doi.org/10.5281/zenodo.21435707";
-const ZENODO = "https://zenodo.org/records/21435707";
-
 
 function corsHeaders() {
   return {
@@ -298,91 +295,8 @@ async function serveAsset(request, env, asset, { head = false } = {}) {
   return new Response(assetRes.body, { status: 200, headers });
 }
 
-async function indexHtml(env) {
-  const stats = await collectStats(env);
-  const views = Number(stats.views) || 0;
-  const downloads = Number(stats.downloads != null ? stats.downloads : stats.total) || 0;
-  const v = views.toLocaleString("en-US");
-  const n = downloads.toLocaleString("en-US");
-  const gh = stats.github || {};
-  return `<!doctype html>
-<html lang="en">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ShadowLock downloads</title>
-<style>
-  :root { color-scheme: dark; }
-  body { font: 16px/1.45 system-ui, sans-serif; max-width: 42rem; margin: 3rem auto; padding: 0 1.25rem 4rem; background: #0e1014; color: #e8eaef; }
-  h1 { font-size: 1.75rem; margin: 0 0 .35rem; }
-  .motto { color: #9aa3b2; margin: 0 0 1.5rem; }
-  .card { border: 1px solid #2a3140; border-radius: 12px; padding: 1.25rem 1.35rem; background: #151922; }
-  .nums { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 0 0 1rem; }
-  .count { font-size: 2.2rem; font-variant-numeric: tabular-nums; font-weight: 700; margin: 0; }
-  .count span { display: block; font-size: .95rem; font-weight: 500; color: #9aa3b2; }
-  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 0 0 .85rem; }
-  @media (max-width: 520px) { .btns { grid-template-columns: 1fr; } }
-  a.btn, button.btn { display: block; width: 100%; box-sizing: border-box; text-align: center; font: inherit; font-size: 1.2rem; font-weight: 750; padding: 1rem 1.1rem; border-radius: 10px; border: 0; cursor: pointer; text-decoration: none; }
-  a.btn.primary { background: #e8eaef; color: #0e1014; }
-  button.btn.install { background: #c9a227; color: #14110a; }
-  button.btn.install.copied { background: #7dcf9a; color: #0e1014; }
-  .kid { font-size: 1.05rem; margin: 0 0 1rem; }
-  .meta { margin-top: 1.1rem; color: #9aa3b2; font-size: .92rem; }
-  .meta a { color: #c9d4ff; }
-  .iso { margin-top: .85rem; font-size: .85rem; color: #7d8696; }
-  .banner { border: 1px solid #5c4a1a; background: #241c0d; color: #f0d78c; padding: .85rem 1rem; border-radius: 8px; margin: 0 0 1.2rem; font-size: .92rem; }
-  pre { background: #0e1014; padding: .75rem .9rem; overflow: auto; border-radius: 8px; font-size: .82rem; }
-  code { font-size: .88rem; }
-</style>
-<body>
-  <h1>ShadowLock</h1>
-  <p class="motto">Change is optional. Truth is not. Author Aziel Eliab.</p>
-  <p class="banner">THIS IS: a read-only comparison of jobs you already have. OS-hooks into AZ-OS for process/job observation under ethics policy. THIS IS NOT: a dispatcher, optimizer, people profiler, truth score, or kernel hook. Zero-retention on /v1. Author Aziel Eliab.</p>
-  <div class="card">
-    <div class="nums">
-      <p class="count">${v}<span>Views</span></p>
-      <p class="count">${n}<span>Downloads</span></p>
-    </div>
-    <p class="kid"><strong>Two big buttons.</strong> Download saves the file. One-click install copies a Terminal command. After install, type <code>shadowlock ui</code>, then tap Import JSON file.</p>
-    <div class="btns">
-      <a class="btn primary dl" href="/download?asset=${DEFAULT_ASSET}">Download</a>
-      <button type="button" class="btn install" id="install-btn">One-click install</button>
-    </div>
-    <pre id="install-cmd">${INSTALL_LINE}</pre>
-    <p class="kid">Then run <code>shadowlock ui</code>, open http://127.0.0.1:8764 (this computer only), tap <strong>Import JSON file</strong> or <strong>Attach via AZ-OS</strong>, then <strong>Export JSON report</strong> if you want to save.</p>
-    <p class="meta">The download count ticks on the Download click. The Worker serves the gzip (HTTP 200). No 302 to GitHub. Forks using this same link are counted automatically. ${DEFAULT_ASSET} — ${n} counted.</p>
-    <p class="iso">Isolated counter: Worker <code>shadowlock-download-tracker</code>, project <code>${PROJECT}</code>, KV <code>SHADOWLOCK_DOWNLOADS</code>. Not mixed with any other product. /v1 does not increment downloads.</p>
-    <p class="meta">GitHub: stars ${gh.stars || 0} · forks ${gh.forks || 0} · watchers ${gh.watchers || 0} · release assets ${gh.release_download_count || 0}</p>
-    <p class="meta">Paper: <a href="${DOI}">doi:10.5281/zenodo.21435707</a> · <a href="${ZENODO}">Zenodo</a> · Apache-2.0 · Eliab, Aziel</p>
-    <p class="meta"><a href="/stats">JSON stats</a> · <a href="/openapi.json">OpenAPI</a> · <a href="/v1/skill">Skill</a> · <a href="/ai">AI runtime</a> · <a href="${GITHUB_REPO}">GitHub</a> · <a href="${GITHUB_LATEST}">releases</a></p>
-    <script>
-      (function () {
-        var cmd = "curl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash";
-        var btn = document.getElementById("install-btn");
-        var pre = document.getElementById("install-cmd");
-        if (!btn) return;
-        btn.addEventListener("click", function () {
-          function done(ok) {
-            btn.textContent = ok ? "Copied! Paste in Terminal, then run shadowlock ui" : "Select the command, copy it, then run shadowlock ui";
-            btn.classList.add("copied");
-          }
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(cmd).then(function () { done(true); }).catch(function () { done(false); });
-          } else {
-            done(false);
-            if (pre && window.getSelection) {
-              var r = document.createRange();
-              r.selectNodeContents(pre);
-              var sel = window.getSelection();
-              sel.removeAllRanges();
-              sel.addRange(r);
-            }
-          }
-        });
-      })();
-    </script>
-  </div>
-</body>
-</html>`;
+async function renderHome(env) {
+  return indexHtml(await collectStats(env));
 }
 
 export default {
@@ -408,10 +322,16 @@ export default {
     const runtime = await handleRuntimeApi(request, url);
     if (runtime) return runtime;
 
+    const seo = handleSeo(request, url);
+    if (seo) return seo;
+
+    if (url.pathname === "/sigil.png" && request.method === "GET") {
+      return serveSigil(request, env);
+    }
 
     if (url.pathname === "/" && request.method === "GET") {
       await incrementViews(env);
-      return new Response(await indexHtml(env), {
+      return new Response(await renderHome(env), {
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", ...corsHeaders() },
       });
     }
