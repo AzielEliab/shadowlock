@@ -6,6 +6,7 @@ Does **not** 302 to GitHub on `/download`. Serves gzip via `ASSETS.fetch`,
 `Cache-Control: private, no-store`.
 
 GET `/` is the **product UI** (observe workspace + counted download). Increments a **page-view** counter (separate from downloads).
+GET `/count` returns `{project, views, downloads, total}` (does not increment).
 GET `/download` increments **downloads**.
 `/v1` never increments DOWNLOADS KV.
 GET `/install.sh` one-click install (does not increment; script curls `/download`).

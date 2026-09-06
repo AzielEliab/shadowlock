@@ -75,3 +75,15 @@ def test_worker_wires_product_page():
     assert "renderHome" in INDEX
     assert "ShadowLock downloads" not in INDEX
     assert "ShadowLock downloads" not in PAGE
+
+
+def test_count_returns_project_views_downloads_total():
+    assert 'url.pathname === "/count"' in INDEX
+    assert "function countBody(" in INDEX
+    assert "return { project: PROJECT, views, downloads, total }" in INDEX
+    assert "countBody(await collectStats(env))" in INDEX
+    count_idx = INDEX.index('url.pathname === "/count"')
+    chunk = INDEX[count_idx : count_idx + 280]
+    assert "json({ project: PROJECT, total:" not in chunk
+    readme = (ROOT / "workers/download-tracker/README.md").read_text(encoding="utf-8")
+    assert "GET `/count` returns `{project, views, downloads, total}`" in readme

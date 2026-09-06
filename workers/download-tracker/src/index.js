@@ -7,6 +7,7 @@ import { handleSeo, indexHtml, serveSigil } from "./page.js";
  * GET  /download?repo=AzielEliab/shadowlock&tag=latest&asset=...
  *      increments KV, serves gzip via ASSETS.fetch (no 302)
  *      (default https://github.com/AzielEliab/shadowlock/releases)
+ * GET  /count   {project, views, downloads, total} — does not increment
  * GET  /stats   JSON totals + per-repo + per-branch breakdown
  * POST /event   forks report a download {owner,repo,branch,fork,asset}
  *
@@ -185,6 +186,13 @@ async function collectStats(env) {
   };
 }
 
+function countBody(stats) {
+  const views = Number(stats.views) || 0;
+  const downloads = Number(stats.downloads != null ? stats.downloads : stats.total) || 0;
+  const total = Number(stats.total) || 0;
+  return { project: PROJECT, views, downloads, total };
+}
+
 
 
 function viewsKey() {
@@ -337,8 +345,7 @@ export default {
     }
 
     if (url.pathname === "/count" && request.method === "GET") {
-      const stats = await collectStats(env);
-      return json({ project: PROJECT, total: stats.total || 0 });
+      return json(countBody(await collectStats(env)));
     }
 
     if (url.pathname === "/stats" && request.method === "GET") {
