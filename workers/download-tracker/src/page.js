@@ -22,8 +22,8 @@ const DEFAULT_UA = "Mozilla/5.0";
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, X-Aziel-Runtime-Token, User-Agent",
   };
 }
 
@@ -137,6 +137,7 @@ export function sitemapXml() {
     HOST + "/install.sh",
     HOST + "/v1/skill",
     HOST + "/v1/health",
+    HOST + "/v1/mesh",
     HOST + "/openapi.json",
     HOST + "/cite.json",
     HOST + "/llms.txt",
@@ -171,6 +172,7 @@ export function llmsTxt() {
     "Hook: POST " + HOST + "/v1/hook  ethics-gated AZ-OS overlay. Not a kernel.",
     "Health: GET " + HOST + "/v1/health",
     "Skill: GET " + HOST + "/v1/skill",
+    "Suite mesh: GET " + HOST + "/v1/mesh (PROXY to aziel-runtime; default OFF; QNM-BUILD-1.0 live|locked|isolated; no Node Gate)",
     "OpenAPI: " + HOST + "/openapi.json",
     "Cite: " + HOST + "/cite.json",
     "Counted download: GET " + HOST + "/download  (gzip 200, increments KV)",
@@ -581,6 +583,14 @@ export async function indexHtml(stats) {
   .foot-note { font-style: italic; }
   a.skip { position: absolute; left: -999px; }
   a.skip:focus { left: 1rem; top: 1rem; background: var(--gold); color: #14110a; padding: .4rem .7rem; z-index: 2; }
+  #meshStrip { border: 1px solid #c9a227; border-radius: 12px; padding: .85rem 1rem; background: #151922; margin: 0 0 1.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1rem; font-size: .88rem; color: #9aa3b2; }
+  #meshStrip .live { color: #e8eaef; }
+  #meshStrip .live b { color: #c9a227; font-size: 1.35rem; margin-right: .35rem; }
+  #meshStrip .rollup b { color: #c9a227; }
+  #meshStrip button { font: 700 .78rem/1 ui-monospace, Menlo, Consolas, monospace; height: 2rem; padding: 0 .75rem; border-radius: 8px; background: #101010; color: #e8eaef; border: 1px solid #c9a227; cursor: pointer; }
+  #meshStrip button:hover { background: #241c0d; color: #c9a227; }
+  #meshStrip input { width: 10rem; padding: .4rem .55rem; border: 1px solid #c9a227; border-radius: 8px; background: #0e0e0e; color: #e8eaef; font: inherit; }
+  #meshProducts { flex-basis: 100%; margin: 0; }
 </style>
 </head>
 <body>
@@ -596,6 +606,20 @@ export async function indexHtml(stats) {
     <p class="lede">Observe jobs you already have. Compare them to a guess. Read money made, lost, and left on the table. Hashed ids only. This page is the software — not a downloads shell.</p>
     <p class="banner">${escapeHtml(LIMITATION)}</p>
     <p class="live" id="live" hidden>Checking health…</p>
+    <div id="meshStrip" aria-label="Suite Live Nodes">
+      <div class="live"><b id="meshLiveCount">0</b> Live Nodes</div>
+      <div id="meshLine">Suite mesh: off (default). QNM-BUILD-1.0. Not an anonymity network.</div>
+      <div class="rollup">live <b id="qnmLive">0</b> · locked <b id="qnmLocked">0</b> · isolated <b id="qnmIsolated">0</b></div>
+      <div>No Node Gate · No auto-heal · Aziel Eliab only</div>
+      <div>
+        <input id="meshBearer" type="text" maxlength="80" placeholder="bearer (required to enable)" aria-label="mesh bearer">
+        <button id="meshEnable" type="button" title="Enable suite mesh. Declared bearer required. Default off.">Enable</button>
+        <button id="meshDisable" type="button" title="Disable suite mesh (always allowed)">Disable</button>
+        <button id="meshJoin" type="button" title="Join as shadowlock. Refused while mesh is OFF. No auto-join.">Join</button>
+        <button id="meshLeave" type="button" title="Leave this node. No auto-heal.">Leave</button>
+      </div>
+      <p id="meshProducts">Catalog MCP mesh_* · FragGate slug=mesh · /v1/mesh/* PROXY · not AnonBroadcast · not AZMail ring · not a Node Gate</p>
+    </div>
   </header>
 
   <section id="workspace">
@@ -682,6 +706,7 @@ export async function indexHtml(stats) {
       <a href="/stats">JSON stats</a> ·
       <a href="/openapi.json">OpenAPI</a> ·
       <a href="/v1/skill">Skill</a> ·
+      <a href="/v1/mesh">/v1/mesh</a> ·
       <a href="/v1/health">Health</a> ·
       <a href="/llms.txt">llms.txt</a> ·
       <a href="/ai">AI runtime</a> ·
@@ -699,6 +724,108 @@ export async function indexHtml(stats) {
   </footer>
 <script>
 ${CLIENT_JS}
+</script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function meshNum() {
+    for (var i = 0; i < arguments.length; i++) {
+      var raw = arguments[i];
+      if (raw == null || raw === "") continue;
+      var n = typeof raw === "number" ? raw : Number(String(raw).replace(/,/g, ""));
+      if (Number.isFinite(n) && n >= 0) return Math.floor(n);
+    }
+    return 0;
+  }
+  function unwrapMesh(j) {
+    if (!j || typeof j !== "object") return {};
+    if (j.result && typeof j.result === "object") return Object.assign({}, j, j.result);
+    if (j.mesh && typeof j.mesh === "object") return Object.assign({}, j, j.mesh);
+    return j;
+  }
+  function paintMesh(raw) {
+    var j = unwrapMesh(raw);
+    var on = j.enabled === true || j.enabled === 1 || String(j.status || "").toLowerCase() === "on";
+    var r = (j.rollup && typeof j.rollup === "object") ? j.rollup : {};
+    var live = on ? meshNum(r.live, j.live_nodes, j.live) : 0;
+    var locked = on ? meshNum(r.locked, j.locked_nodes, j.locked) : 0;
+    var isolated = on ? meshNum(r.isolated, j.isolated_nodes, j.isolated) : 0;
+    $("meshLiveCount").textContent = String(live);
+    $("qnmLive").textContent = String(live);
+    $("qnmLocked").textContent = String(locked);
+    $("qnmIsolated").textContent = String(isolated);
+    var line = $("meshLine");
+    if (on) line.textContent = "Suite mesh: on · live " + live + " · locked " + locked + " · isolated " + isolated + ". Not an anonymity network.";
+    else if (j.status === "unavailable" || (j.ok === false && j.error)) line.textContent = "Suite mesh: off (unavailable). QNM-BUILD-1.0. Not an anonymity network.";
+    else line.textContent = "Suite mesh: off (default). QNM-BUILD-1.0. Not an anonymity network.";
+    var products = j.products_present || j.products || [];
+    var names = Array.isArray(products) ? products.map(function (p) { return typeof p === "string" ? p : (p && (p.product || p.slug)) || ""; }).filter(Boolean) : [];
+    var nodes = Array.isArray(j.nodes) ? j.nodes : [];
+    var extra = names.length ? " · products " + names.join(", ") : (nodes.length ? " · " + nodes.length + " node labels" : "");
+    $("meshProducts").textContent = "Catalog MCP mesh_* · FragGate slug=mesh · /v1/mesh/* PROXY · not AnonBroadcast · not AZMail ring · not a Node Gate" + extra;
+  }
+  async function meshGet(path) {
+    var r = await fetch(path, { headers: { "user-agent": "Mozilla/5.0", accept: "application/json" } });
+    return r.json();
+  }
+  async function meshPost(path, payload) {
+    var r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "user-agent": "Mozilla/5.0" }, body: JSON.stringify(payload || {}) });
+    return r.json();
+  }
+  async function refreshMesh() {
+    try {
+      var status = await meshGet("/v1/mesh");
+      var merged = status;
+      var inner = unwrapMesh(status);
+      var on = inner.enabled === true;
+      if (on) {
+        try {
+          var nodes = await meshGet("/v1/mesh/nodes");
+          merged = Object.assign({}, inner, unwrapMesh(nodes));
+        } catch (e) { /* status is enough */ }
+      }
+      paintMesh(merged);
+      var nodeId = sessionStorage.getItem("shadowlock_mesh_node");
+      if (on && nodeId) {
+        try { await meshPost("/v1/mesh/heartbeat", { node_id: nodeId }); } catch (e) { /* no auto-heal */ }
+      }
+    } catch (e) {
+      paintMesh({ ok: false, enabled: false, status: "unavailable", error: "mesh_unavailable" });
+    }
+  }
+  $("meshEnable").onclick = async function () {
+    var bearer = ($("meshBearer").value || "").trim();
+    paintMesh(await meshPost("/v1/mesh/enable", bearer ? { bearer: bearer } : {}));
+    refreshMesh();
+  };
+  $("meshDisable").onclick = async function () {
+    sessionStorage.removeItem("shadowlock_mesh_node");
+    paintMesh(await meshPost("/v1/mesh/disable", {}));
+    refreshMesh();
+  };
+  $("meshJoin").onclick = async function () {
+    var j = await meshPost("/v1/mesh/join", { product: "shadowlock", label: "ShadowLock Worker" });
+    var inner = unwrapMesh(j);
+    var id = inner.node_id || inner.id || (inner.session && inner.session.node_id);
+    if (id) sessionStorage.setItem("shadowlock_mesh_node", String(id));
+    paintMesh(j);
+    refreshMesh();
+  };
+  $("meshLeave").onclick = async function () {
+    var id = sessionStorage.getItem("shadowlock_mesh_node");
+    if (id) await meshPost("/v1/mesh/leave", { node_id: id });
+    sessionStorage.removeItem("shadowlock_mesh_node");
+    refreshMesh();
+  };
+  window.addEventListener("pagehide", function () {
+    var id = sessionStorage.getItem("shadowlock_mesh_node");
+    if (!id || typeof navigator.sendBeacon !== "function") return;
+    try { navigator.sendBeacon("/v1/mesh/leave", new Blob([JSON.stringify({ node_id: id })], { type: "application/json" })); } catch (e) { /* leave expires in 5 minutes */ }
+  });
+  refreshMesh();
+  setInterval(refreshMesh, 30000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshMesh(); });
+})();
 </script>
 </body>
 </html>`;

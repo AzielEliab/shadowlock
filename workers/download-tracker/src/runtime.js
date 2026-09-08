@@ -2,14 +2,16 @@
  * ShadowLock hosted runtime (port of envelope/sample/counterfactual/ledger/report).
  * Zero-retention: never write KV except existing download keys.
  * POST /v1/observe {observed, counterfactual} or {jobs}.
+ * /v1/mesh/* PROXY to aziel-runtime via AZIEL_RUNTIME (handled in index.js before this catch-all).
  */
+import { meshOpenApiPaths, meshPointer } from "./mesh.js";
 const PRODUCT = "shadowlock";
 const VERSION = "0.2.0";
 const MOTTO = "Change is optional. Truth is not.";
 const ETHICS_MOTTO = "Integrity precedes execution.";
 const HOOK_PROTOCOL = "azos-shadowlock-hook/1";
 const HOST = "https://shadowlock-download-tracker.vibelock.workers.dev";
-const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| POST | `/v1/observe` | Observe {observed, counterfactual} or {jobs}. Not stored. |\n| POST | `/v1/hook` | Ethics-gated AZ-OS hook frame. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/hook \\\n  -H 'content-type: application/json' \\\n  -d '{\"jobs\":[{\"id\":\"job-1\",\"task_class\":\"repair\",\"actual_outcome\":\"complete\"}]}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\n```\n\nWorks with ChatGPT (GPT Actions / OpenAI), Grok (xAI), Venice, Claude (Anthropic), Cursor (MCP), Glama (MCP), Perplexity, Microsoft Copilot / Bing, Google Gemini / Vertex, Mistral, Meta AI, Apple Intelligence surfaces, Amazon Q tooling, DuckAssist, You.com, Cohere, and other MCP/OpenAPI-capable assistants. OpenAPI: import as a GPT Action, custom tool, or HTTP tool. MCP: POST the catalog /mcp endpoint for Cursor, Glama, Claude, and other MCP clients.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\nshadowlock attach\n```\n\nThen open http://127.0.0.1:8764 (this computer only). AZ-OS: `azos ui` at http://127.0.0.1:8800.\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. OS-hooks into AZ-OS under ethics policy. THIS IS NOT: a people profiler, PII store, truth score, kernel hook, or process controller. Zero-retention on /v1. Author Aziel Eliab.\n\nHosted product UI: `GET https://shadowlock-download-tracker.vibelock.workers.dev/` — observe workspace + counted download.\n\nCitation: Eliab, Aziel. (2026). ShadowLock 0.2.0 [Software]. Apache-2.0. https://github.com/AzielEliab/shadowlock\n\nHistorical DOI 10.5281/zenodo.21435707 is tombstoned (Zenodo 410/404). Software deposit needed. No DOI invented.\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n\n## Catalog + local UI\n\nAuthor: **Aziel Eliab**. Honest scope: OS-hooks into AZ-OS for process/job observation under ethics policy.\n\n- Catalog product: https://aziel-runtime.vibelock.workers.dev/p/shadowlock/\n- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json\n- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n- This Worker skill: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`\n- This Worker OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json\n\nLocal UI: **Import JSON file** or **Attach via AZ-OS**, then **Export JSON**. Then `shadowlock doctor`.\n";
+const SKILL = "---\nname: ShadowLock\ndescription: Use when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy. Dual surface: Worker /v1 + catalog MCP. This Worker /v1/mesh/* PROXY to aziel-runtime via AZIEL_RUNTIME. Suite mesh default OFF. QNM-BUILD-1.0 live|locked|isolated. No Node Gate. No auto-heal. Not anonymity. Hosted /v1 via this Worker or aziel-runtime. Author Aziel Eliab.\n---\n\n# ShadowLock\n\nChange is optional. Truth is not.\n\nAuthor: **Aziel Eliab**.\n\nUse when comparing an observed outcome to a counterfactual without storing PII. OS-hooks into AZ-OS for process/job observation under ethics policy.\n\nAlways send `User-Agent: Mozilla/5.0`. Cloudflare Workers may 403 an empty agent.\n\n## Endpoints (this Worker)\n\nHost: `https://shadowlock-download-tracker.vibelock.workers.dev`\n\n| Method | Path | What |\n|--------|------|------|\n| GET | `/v1/health` | Liveness. Does not increment downloads. |\n| GET | `/v1/skill` | This markdown. Does not increment downloads. |\n| GET | `/v1/mesh` | PROXY suite mesh status. Default OFF. QNM live|locked|isolated. Never enables. |\n| GET | `/v1/mesh/nodes` | PROXY Live Nodes roster (5-minute presence). |\n| POST | `/v1/mesh/{enable,disable,join,heartbeat,leave,broadcast}` | PROXY. Bearer required to enable. No auto-heal. Anon-broadcast is not a publish path. |\n| POST | `/v1/observe` | Observe {observed, counterfactual} or {jobs}. Not stored. |\n| POST | `/v1/hook` | Ethics-gated AZ-OS hook frame. Not stored. |\n\nOpenAPI: `https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json`\n\nCatalog OpenAPI: `https://aziel-runtime.vibelock.workers.dev/openapi.json`\n\nMCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n\nCatalog aliases under `/p/shadowlock/\u2026`.\n\n## How to call (Mozilla/5.0)\n\n```bash\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/health\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \\\n  -H 'content-type: application/json' \\\n  -d '{\"observed\":{\"id\":\"job-1\",\"outcome\":\"done\"},\"counterfactual\":{\"outcome\":\"skipped\"}}'\ncurl -s -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/hook \\\n  -H 'content-type: application/json' \\\n  -d '{\"jobs\":[{\"id\":\"job-1\",\"task_class\":\"repair\",\"actual_outcome\":\"complete\"}]}'\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill\ncurl -s -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh\n```\n\nWorks with ChatGPT (GPT Actions / OpenAI), Grok (xAI), Venice, Claude (Anthropic), Cursor (MCP), Glama (MCP), Perplexity, Microsoft Copilot / Bing, Google Gemini / Vertex, Mistral, Meta AI, Apple Intelligence surfaces, Amazon Q tooling, DuckAssist, You.com, Cohere, and other MCP/OpenAPI-capable assistants. OpenAPI: import as a GPT Action, custom tool, or HTTP tool. MCP: POST the catalog /mcp endpoint for Cursor, Glama, Claude, and other MCP clients.\n\n## Local (after one-click install)\n\n```bash\ncurl -fsSL https://shadowlock-download-tracker.vibelock.workers.dev/install.sh | bash\nshadowlock ui\nshadowlock attach\n```\n\nThen open http://127.0.0.1:8764 (this computer only). AZ-OS: `azos ui` at http://127.0.0.1:8800.\n\n## Honest banner\n\nTHIS IS: a counterfactual observation envelope with hashed ids. OS-hooks into AZ-OS under ethics policy. THIS IS NOT: a people profiler, PII store, truth score, kernel hook, or process controller. Zero-retention on /v1. Author Aziel Eliab.\n\nHosted product UI: `GET https://shadowlock-download-tracker.vibelock.workers.dev/` — observe workspace + counted download.\n\nCitation: Eliab, Aziel. (2026). ShadowLock 0.2.0 [Software]. Apache-2.0. https://github.com/AzielEliab/shadowlock\n\nHistorical DOI 10.5281/zenodo.21435707 is tombstoned (Zenodo 410/404). Software deposit needed. No DOI invented.\n\nApache-2.0 (or the repo LICENSE). Forks are welcome and always allowed.\n\n## Catalog + local UI\n\nAuthor: **Aziel Eliab**. Honest scope: OS-hooks into AZ-OS for process/job observation under ethics policy.\n\n- Catalog product: https://aziel-runtime.vibelock.workers.dev/p/shadowlock/\n- Catalog OpenAPI: https://aziel-runtime.vibelock.workers.dev/openapi.json\n- Catalog MCP: `POST https://aziel-runtime.vibelock.workers.dev/mcp`\n- This Worker skill: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill`\n- This Worker OpenAPI: https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json\n- Suite mesh: `GET https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh` PROXY (default OFF)\n\nLocal UI: **Import JSON file** or **Attach via AZ-OS**, then **Export JSON**. Then `shadowlock doctor`. Worker homepage Live Nodes strip polls `GET /v1/mesh` (default OFF).\n";
 
 const HASHED_ID_HEX_LEN = 12;
 const PII_KEYS = new Set([
@@ -33,8 +35,8 @@ const URGENCY_ENUM = { low: 0.25, medium: 0.5, med: 0.5, high: 0.75, critical: 1
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, X-Aziel-Runtime-Token, User-Agent",
   };
 }
 
@@ -468,7 +470,7 @@ function openapiSpec() {
     info: {
       title: "ShadowLock runtime",
       version: VERSION,
-      description: "Read-only zero-retention outcome mirror. OS-hooks into AZ-OS under ethics policy. " + MOTTO,
+      description: "Read-only zero-retention outcome mirror. OS-hooks into AZ-OS under ethics policy. " + MOTTO + " Suite mesh /v1/mesh/* PROXY to aziel-runtime (AZIEL_RUNTIME). Default OFF. QNM-BUILD-1.0 live|locked|isolated. No Node Gate. No auto-heal. Not anonymity. Aziel Eliab only.",
     },
     servers: [{ url: HOST }],
     paths: {
@@ -507,6 +509,7 @@ function openapiSpec() {
           responses: { "200": { description: "hook receipt", content: { "application/json": { schema: { type: "object" } } } } },
         },
       },
+      ...meshOpenApiPaths(),
       "/v1/observe": {
         post: {
           operationId: "observe",
@@ -556,14 +559,16 @@ function aiHtml() {
   <p><code>${HOST}/openapi.json</code></p>
   <p>Observe endpoint: <code>POST ${HOST}/v1/observe</code>.</p>
   <h2>MCP catalog</h2>
-  <p>Point Cursor, Glama, Claude, and other MCP clients at <code>POST https://aziel-runtime.vibelock.workers.dev/mcp</code>.</p>
-  <p><a href="/openapi.json">openapi.json</a> · <a href="/v1/health">health</a> · <a href="/">product UI</a></p>
+  <p>Point Cursor, Glama, Claude, and other MCP clients at <code>POST https://aziel-runtime.vibelock.workers.dev/mcp</code> (catalog mesh_* + FragGate slug=mesh).</p>
+  <p>Suite mesh: <code>GET ${HOST}/v1/mesh</code> PROXY to aziel-runtime. Default OFF. QNM-BUILD-1.0 live|locked|isolated. No Node Gate. No auto-heal. Not anonymity. Author: Aziel Eliab only.</p>
+  <p><a href="/openapi.json">openapi.json</a> · <a href="/v1/health">health</a> · <a href="/v1/mesh">/v1/mesh</a> · <a href="/">product UI</a></p>
 </body>
 </html>`;
 }
 
 export async function handleRuntimeApi(request, url) {
   const path = url.pathname;
+  if (path === "/v1/mesh" || path.startsWith("/v1/mesh/")) return null;
   const isApi = path === "/v1" || path.startsWith("/v1/") || path === "/openapi.json" || path === "/ai";
   if (!isApi) return null;
   try {
@@ -577,6 +582,7 @@ export async function handleRuntimeApi(request, url) {
         protocol: HOOK_PROTOCOL,
         ethics: ETHICS_MOTTO,
         motto: MOTTO,
+        mesh: meshPointer(),
       });
     }
     if (path === "/v1/skill" && request.method === "GET") {
@@ -647,7 +653,7 @@ export async function handleRuntimeApi(request, url) {
         ...(observed || {}),
       });
     }
-    return json({ error: "not found" }, 404);
+    return json({ error: "not found", hint: "GET /v1/health GET /v1/skill POST /v1/{observe,hook} GET /v1/mesh" }, 404);
   } catch (err) {
     return json({ error: String(err.message || err) }, 400);
   }
