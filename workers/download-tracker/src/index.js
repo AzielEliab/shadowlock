@@ -1,3 +1,4 @@
+import { handleMeshApi } from "./mesh.js";
 import { handleRuntimeApi } from "./runtime.js";
 import { handleSeo, indexHtml, serveSigil } from "./page.js";
 
@@ -10,6 +11,7 @@ import { handleSeo, indexHtml, serveSigil } from "./page.js";
  * GET  /count   {project, views, downloads, total} — does not increment
  * GET  /stats   JSON totals + per-repo + per-branch breakdown
  * POST /event   forks report a download {owner,repo,branch,fork,asset}
+ *      /v1, /v1/mesh/* do not increment. Suite mesh PROXY via AZIEL_RUNTIME.
  *
  * KV binding DOWNLOADS. Keys: project|owner|repo|branch|fork
  * CORS *. No secrets in this tree.
@@ -28,8 +30,8 @@ const GITHUB_REPO = "https://github.com/AzielEliab/shadowlock";
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, X-Aziel-Runtime-Token, User-Agent",
   };
 }
 
@@ -326,6 +328,9 @@ export default {
       });
     }
 
+
+    const mesh = await handleMeshApi(request, url, env);
+    if (mesh) return mesh;
 
     const runtime = await handleRuntimeApi(request, url);
     if (runtime) return runtime;

@@ -146,6 +146,12 @@ responsibility) must pass before attach. Observation is read-only:
 no kernel intercept, no ptrace, no dispatch, no process control.
 Hosted AZ-OS `/v1` remains overlay labels, not a remote shell.
 
+The Worker homepage shows a suite Live Nodes strip. `/v1/mesh/*` PROXY
+to aziel-runtime. Suite mesh default OFF. QNM rollup is
+live|locked|isolated counts only. No Node Gate. No auto-heal. Not an
+anonymity network. Anon-broadcast is not a publish path. ShadowLock
+remains a read-only zero-retention outcome mirror.
+
 ### 3.1 JobEnvelope
 
 An envelope is already anonymous:

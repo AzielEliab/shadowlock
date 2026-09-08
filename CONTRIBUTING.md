@@ -44,6 +44,9 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
    number.
 8. **Sampling stays opaque.** Do not replace the hash with round-robin
    or a public counter.
+9. **Door vs local op.** `/v1/mesh/*` PROXY to aziel-runtime. Local ops
+   are `/v1/{op}` only. Suite mesh default OFF; QNM rollup
+   live|locked|isolated; no Node Gate; no auto-heal; not anonymity.
 
 ## Where to change things
 
@@ -57,6 +60,8 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
 - CLI: `shadowlock/cli.py`
 - AZ-OS ethics policy: `shadowlock/ethics.py`
 - AZ-OS hook / local observer: `shadowlock/azos_hook.py`
+- Isolated counter: `workers/download-tracker/`
+- Suite mesh / QNM Live Nodes: `workers/download-tracker/src/mesh.js` (`/v1/mesh/*` PROXY to aziel-runtime).
 - New behavior needs a test that fails without the change.
 
 AZ-OS hook is read-only observation under ethics policy. Do not add
