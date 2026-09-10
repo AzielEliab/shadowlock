@@ -172,7 +172,7 @@ export function llmsTxt() {
     "Hook: POST " + HOST + "/v1/hook  ethics-gated AZ-OS overlay. Not a kernel.",
     "Health: GET " + HOST + "/v1/health",
     "Skill: GET " + HOST + "/v1/skill",
-    "Suite mesh: GET " + HOST + "/v1/mesh (PROXY to aziel-runtime; default OFF; QNM-BUILD-1.0 live|locked|isolated; no Node Gate)",
+    "Suite mesh: GET " + HOST + "/v1/mesh (PROXY to aziel-runtime; default OFF; QNM-BUILD-1.0 live|locked|isolated; QNS-CD-1.0 photon QNS1 packet transfer cross-map; no Node Gate; no public qnsd proxy)",
     "OpenAPI: " + HOST + "/openapi.json",
     "Cite: " + HOST + "/cite.json",
     "Counted download: GET " + HOST + "/download  (gzip 200, increments KV)",
@@ -608,7 +608,7 @@ export async function indexHtml(stats) {
     <p class="live" id="live" hidden>Checking health…</p>
     <div id="meshStrip" aria-label="Suite Live Nodes">
       <div class="live"><b id="meshLiveCount">0</b> Live Nodes</div>
-      <div id="meshLine">Suite mesh: off (default). QNM-BUILD-1.0. Not an anonymity network.</div>
+      <div id="meshLine">Suite mesh: off (default). QNM-BUILD-1.0. QNS-CD-1.0 photon QNS1 packet transfer. Not an anonymity network.</div>
       <div class="rollup">live <b id="qnmLive">0</b> · locked <b id="qnmLocked">0</b> · isolated <b id="qnmIsolated">0</b></div>
       <div>No Node Gate · No auto-heal · Aziel Eliab only</div>
       <div>
@@ -618,7 +618,7 @@ export async function indexHtml(stats) {
         <button id="meshJoin" type="button" title="Join as shadowlock. Refused while mesh is OFF. No auto-join.">Join</button>
         <button id="meshLeave" type="button" title="Leave this node. No auto-heal.">Leave</button>
       </div>
-      <p id="meshProducts">Catalog MCP mesh_* · FragGate slug=mesh · /v1/mesh/* PROXY · not AnonBroadcast · not AZMail ring · not a Node Gate</p>
+      <p id="meshProducts">Catalog MCP mesh_* · FragGate slug=mesh · /v1/mesh/* PROXY · QNS-CD-1.0 photon QNS1 packet transfer cross-map · not Softwares-tab · not qnsd proxy · not AnonBroadcast · not AZMail ring · not a Node Gate</p>
     </div>
   </header>
 
@@ -755,14 +755,14 @@ ${CLIENT_JS}
     $("qnmLocked").textContent = String(locked);
     $("qnmIsolated").textContent = String(isolated);
     var line = $("meshLine");
-    if (on) line.textContent = "Suite mesh: on · live " + live + " · locked " + locked + " · isolated " + isolated + ". Not an anonymity network.";
-    else if (j.status === "unavailable" || (j.ok === false && j.error)) line.textContent = "Suite mesh: off (unavailable). QNM-BUILD-1.0. Not an anonymity network.";
-    else line.textContent = "Suite mesh: off (default). QNM-BUILD-1.0. Not an anonymity network.";
+    if (on) line.textContent = "Suite mesh: on · live " + live + " · locked " + locked + " · isolated " + isolated + ". QNS-CD-1.0. Not an anonymity network.";
+    else if (j.status === "unavailable" || (j.ok === false && j.error)) line.textContent = "Suite mesh: off (unavailable). QNM-BUILD-1.0. QNS-CD-1.0 photon QNS1 packet transfer. Not an anonymity network.";
+    else line.textContent = "Suite mesh: off (default). QNM-BUILD-1.0. QNS-CD-1.0 photon QNS1 packet transfer. Not an anonymity network.";
     var products = j.products_present || j.products || [];
     var names = Array.isArray(products) ? products.map(function (p) { return typeof p === "string" ? p : (p && (p.product || p.slug)) || ""; }).filter(Boolean) : [];
     var nodes = Array.isArray(j.nodes) ? j.nodes : [];
     var extra = names.length ? " · products " + names.join(", ") : (nodes.length ? " · " + nodes.length + " node labels" : "");
-    $("meshProducts").textContent = "Catalog MCP mesh_* · FragGate slug=mesh · /v1/mesh/* PROXY · not AnonBroadcast · not AZMail ring · not a Node Gate" + extra;
+    $("meshProducts").textContent = "Catalog MCP mesh_* · FragGate slug=mesh · /v1/mesh/* PROXY · QNS-CD-1.0 photon QNS1 packet transfer cross-map · not Softwares-tab · not qnsd proxy · not AnonBroadcast · not AZMail ring · not a Node Gate" + extra;
   }
   async function meshGet(path) {
     var r = await fetch(path, { headers: { "user-agent": "Mozilla/5.0", accept: "application/json" } });
