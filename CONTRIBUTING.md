@@ -46,7 +46,9 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
    or a public counter.
 9. **Door vs local op.** `/v1/mesh/*` PROXY to aziel-runtime. Local ops
    are `/v1/{op}` only. Suite mesh default OFF; QNM rollup
-   live|locked|isolated; no Node Gate; no auto-heal; not anonymity.
+   live|locked|isolated; QNS-CD-1.0 photon QNS1 packet transfer is a
+   hub cite / Worker mesh cross-map only (not Softwares-tab; no public
+   qnsd proxy); no Node Gate; no auto-heal; not anonymity.
 
 ## Where to change things
 
@@ -61,7 +63,7 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
 - AZ-OS ethics policy: `shadowlock/ethics.py`
 - AZ-OS hook / local observer: `shadowlock/azos_hook.py`
 - Isolated counter: `workers/download-tracker/`
-- Suite mesh / QNM Live Nodes: `workers/download-tracker/src/mesh.js` (`/v1/mesh/*` PROXY to aziel-runtime).
+- Suite mesh / QNM Live Nodes: `workers/download-tracker/src/mesh.js` (`/v1/mesh/*` PROXY to aziel-runtime; QNS-CD-1.0 cross-map cites qnm-node + aziel-runtime).
 - New behavior needs a test that fails without the change.
 
 AZ-OS hook is read-only observation under ethics policy. Do not add

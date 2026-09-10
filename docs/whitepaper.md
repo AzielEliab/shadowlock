@@ -148,9 +148,12 @@ Hosted AZ-OS `/v1` remains overlay labels, not a remote shell.
 
 The Worker homepage shows a suite Live Nodes strip. `/v1/mesh/*` PROXY
 to aziel-runtime. Suite mesh default OFF. QNM rollup is
-live|locked|isolated counts only. No Node Gate. No auto-heal. Not an
-anonymity network. Anon-broadcast is not a publish path. ShadowLock
-remains a read-only zero-retention outcome mirror.
+live|locked|isolated counts only. QNS-CD-1.0 (photon QNS1 packet
+transfer) is a hub cite / Worker mesh cross-map only — not a
+Softwares-tab product and not a public qnsd proxy. Local qnsd lives in
+qnm-node. Runtime cites live in aziel-runtime. No Node Gate. No
+auto-heal. Not an anonymity network. Anon-broadcast is not a publish
+path. ShadowLock remains a read-only zero-retention outcome mirror.
 
 ### 3.1 JobEnvelope
 

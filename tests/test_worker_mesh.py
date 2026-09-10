@@ -34,6 +34,37 @@ def test_mesh_contract_default_off_qnm_law() -> None:
     assert 'code: extra.code || "MESH-OK"' in MESH or '"MESH-OK"' in MESH
 
 
+def test_qns_cd_cross_map() -> None:
+    assert 'QNS_CD_SPEC = "QNS-CD-1.0"' in MESH
+    assert "export const QNS_CD" in MESH
+    assert "photon QNS1 packet transfer" in MESH
+    assert "QNS-CD-1.0" in MESH
+    assert "QNS-CD-1.0" in MESH_NOTE_SOURCE()
+    assert "https://github.com/AzielEliab/qnm-node" in MESH
+    assert "https://github.com/AzielEliab/aziel-runtime" in MESH
+    assert "https://github.com/AzielEliab/azinterface" in MESH
+    assert "software_tab: false" in MESH
+    assert "public_proxy: false" in MESH
+    assert "qnsd: false" in MESH
+    assert "withQnsCd" in MESH
+    assert "qns_cd_spec: QNS_CD_SPEC" in MESH
+    assert "qns_cd: QNS_CD" in MESH
+    assert "No public qnsd proxy" in MESH
+    assert "Not a Softwares-tab product" in MESH
+    assert "QNS-CD-1.0" in README
+    assert "QNS-CD-1.0" in SKILL
+    assert "QNS-CD-1.0" in WORKER_README
+    assert "QNS-CD-1.0" in RUNTIME
+    assert "QNS-CD-1.0" in PAGE
+    assert "qnsd proxy" in PAGE or "public qnsd proxy" in PAGE or "not qnsd proxy" in PAGE
+
+
+def MESH_NOTE_SOURCE() -> str:
+    start = MESH.index("export const MESH_NOTE")
+    end = MESH.index(";", start)
+    return MESH[start:end]
+
+
 def test_mesh_pointer_and_openapi_helpers() -> None:
     assert "export function meshPointer" in MESH
     assert "export function meshOpenApiPaths" in MESH

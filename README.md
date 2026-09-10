@@ -53,7 +53,7 @@ The Worker serves the gzip itself (HTTP 200, no 302 to GitHub).
 - Direct tarball: [shadowlock-0.2.0.tar.gz](https://shadowlock-download-tracker.vibelock.workers.dev/download?asset=shadowlock-0.2.0.tar.gz)
 - One-click install: [https://shadowlock-download-tracker.vibelock.workers.dev/install.sh](https://shadowlock-download-tracker.vibelock.workers.dev/install.sh)
 - Skill: [https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill](https://shadowlock-download-tracker.vibelock.workers.dev/v1/skill)
-- Suite mesh proxy: [https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh](https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh) — default OFF; QNM live / locked / isolated
+- Suite mesh proxy: [https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh](https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh) — default OFF; QNM live / locked / isolated; QNS-CD-1.0 (photon QNS1 packet transfer) hub cite / Worker mesh cross-map only — not a Softwares-tab product, not a public qnsd proxy. Local qnsd: [qnm-node](https://github.com/AzielEliab/qnm-node). Runtime cites: [aziel-runtime](https://github.com/AzielEliab/aziel-runtime). Pair custody: [azinterface](https://github.com/AzielEliab/azinterface).
 - OpenAPI: [https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json](https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json)
 - GitHub: [https://github.com/AzielEliab/shadowlock](https://github.com/AzielEliab/shadowlock)
 - Zenodo DOI: [10.5281/zenodo.21435707](https://doi.org/10.5281/zenodo.21435707) · [record](https://zenodo.org/records/21435707)
@@ -162,7 +162,7 @@ Works with ChatGPT (GPT Actions / OpenAI), Grok (xAI), Venice, Claude (Anthropic
 
 **OpenAPI:** import https://shadowlock-download-tracker.vibelock.workers.dev/openapi.json as a GPT Action, custom tool, HTTP tool, or other OpenAPI connector.
 
-**MCP:** `POST https://aziel-runtime.vibelock.workers.dev/mcp` for Cursor, Glama, Claude, and other MCP clients. Suite mesh `/v1/mesh/*` PROXY via `AZIEL_RUNTIME` (default OFF; QNM-BUILD-1.0 live|locked|isolated; no Node Gate). Catalog MCP `mesh_*` + FragGate `slug=mesh`.
+**MCP:** `POST https://aziel-runtime.vibelock.workers.dev/mcp` for Cursor, Glama, Claude, and other MCP clients. Suite mesh `/v1/mesh/*` PROXY via `AZIEL_RUNTIME` (default OFF; QNM-BUILD-1.0 live|locked|isolated; QNS-CD-1.0 photon QNS1 packet transfer cross-map; no Node Gate; no public qnsd proxy). Catalog MCP `mesh_*` + FragGate `slug=mesh`. Not a Softwares-tab product.
 
 ```bash
 curl -sS -A 'Mozilla/5.0' -X POST https://shadowlock-download-tracker.vibelock.workers.dev/v1/observe \
