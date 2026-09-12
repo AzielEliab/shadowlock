@@ -14,8 +14,9 @@ def test_title_and_identity():
     assert "Aziel Eliab" in PAGE
     assert "Apache-2.0" in PAGE
     assert "Forks are welcome" in PAGE
-    assert "Everblooming sigil" in PAGE
     assert "/sigil.png" in PAGE
+    assert 'alt=""' in PAGE
+    assert "Everblooming sigil" not in PAGE
     assert "Collin" not in PAGE
     assert "Horton" not in PAGE
     assert "No OS hook" not in PAGE
