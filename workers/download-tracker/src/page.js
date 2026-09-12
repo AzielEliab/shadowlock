@@ -511,9 +511,8 @@ export async function indexHtml(stats) {
   body { max-width: 52rem; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
   a { color: #c9d4ff; }
   .brandrow { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
-  .brandmark { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; flex: 0 0 auto;
+  .brandmark { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex: 0 0 auto;
     box-shadow: 0 0 0 1px #d4af3733; background: #0a0c10; }
-  .stamp { margin: 0; color: var(--gold); font-size: .88rem; letter-spacing: .02em; }
   .tag { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem;
     letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
   h1 { font-size: 2rem; font-weight: 650; letter-spacing: 0.03em; margin: 0.2rem 0 0.25rem; }
@@ -597,8 +596,7 @@ export async function indexHtml(stats) {
   <a class="skip" href="#workspace">Skip to workspace</a>
   <header>
     <div class="brandrow">
-      <img class="brandmark" src="/sigil.png" width="48" height="48" alt="Everblooming sigil">
-      <p class="stamp">Everblooming sigil · Aziel Eliab</p>
+      <img class="brandmark" src="/sigil.png" width="40" height="40" alt="" decoding="async">
     </div>
     <div class="tag">ShadowLock · ${VERSION} · Aziel Eliab · zero-retention · Apache-2.0</div>
     <h1>ShadowLock</h1>

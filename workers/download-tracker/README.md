@@ -16,6 +16,6 @@ GET `/v1/skill` returns skill markdown (`text/markdown`). Does not increment vie
 Verify: `curl -sS -A 'Mozilla/5.0' https://shadowlock-download-tracker.vibelock.workers.dev/v1/mesh/status` returns MESH-OK style JSON with `enabled: false` by default.
 POST `/v1/observe` accepts `{observed, counterfactual}` or `{jobs}`. Does not increment.
 POST `/v1/hook` is an ethics-gated AZ-OS hook frame. Does not increment views or downloads.
-GET `/cite.json` `/robots.txt` `/sitemap.xml` `/llms.txt` `/sigil.png` — SEO + cite + Everblooming sigil.
+GET `/cite.json` `/robots.txt` `/sitemap.xml` `/llms.txt` `/sigil.png` — SEO + cite + official sigil.
 
 Host: https://shadowlock-download-tracker.vibelock.workers.dev
