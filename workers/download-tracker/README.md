@@ -19,3 +19,15 @@ POST `/v1/hook` is an ethics-gated AZ-OS hook frame. Does not increment views or
 GET `/cite.json` `/robots.txt` `/sitemap.xml` `/llms.txt` `/sigil.png` — SEO + cite + official sigil.
 
 Host: https://shadowlock-download-tracker.vibelock.workers.dev
+
+## Human / bot schema (`/stats` and `/count`)
+
+Additive dual-count (Whitestone canary). Classification lives in `src/classify.js`
+and response shaping in `src/stats-shape.js`.
+
+Invariant: `views === views_human + views_bot` and
+`downloads === downloads_human + downloads_bot`.
+
+Legacy strategy (b): existing KV totals are never reset. Pre-split remainder
+is shown as bot on read (`views_bot = views - views_human`). Author: Aziel Eliab only.
+
