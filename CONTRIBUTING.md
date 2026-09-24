@@ -22,10 +22,12 @@ Python 3.10+. Core is stdlib only. pytest is the dev extra. No network.
 1. Treat `origin` as one peer among many. Downstream forks are part of
    the download-tracking model (see `workers/download-tracker`): they
    report as `{owner}/{repo}`, not as anonymous noise.
-2. **No persistence.** Do not add sqlite, a `.shadowlock` operations
+2. **No job persistence.** Do not add sqlite, a `.shadowlock` operations
    store, `.shadowlock-state.json`, job logs on disk, or any write of raw envelopes. Session
    payloads live in memory and die on `forget()`. CLI `import`/`export` and the UI
-   read and write only paths the user named.
+   read and write only paths the user named. The Softwares link record is separate:
+   `~/.local/share/shadowlock/links.json` stores slug, kind, input id, input path,
+   linked time, and business label so 4DMap can read it. It does not store job payloads.
 3. **No write adapters.** Adapters expose `iter_jobs()` / `load` only.
    A method that writes, saves, updates, dispatches, schedules, or
    modifies an external system is out of spec and must raise.

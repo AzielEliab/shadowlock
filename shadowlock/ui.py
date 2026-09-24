@@ -72,7 +72,7 @@ PAGE = r"""<!DOCTYPE html>
   button:disabled { opacity: 0.45; cursor: not-allowed; }
   button.primary { min-height: 2.75rem; }
   button.ghost { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
-  button:focus-visible, summary:focus-visible, textarea:focus-visible, a:focus-visible, input:focus-visible {
+  button:focus-visible, summary:focus-visible, textarea:focus-visible, a:focus-visible, input:focus-visible, .tile:focus-visible {
     outline: 3px solid var(--focus); outline-offset: 2px;
   }
   .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1rem 0 0.4rem; }
@@ -98,10 +98,47 @@ PAGE = r"""<!DOCTYPE html>
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0,0,0,0); border: 0; }
   footer { margin-top: 1.6rem; color: var(--muted); font-size: 0.9rem; }
+  .drop {
+    position: sticky; top: 0.6rem; z-index: 2;
+    border: 2px dashed var(--line); border-radius: 14px; background: var(--panel);
+    padding: 1.15rem 1rem; margin: 0 0 0.85rem; min-height: 6.5rem;
+  }
+  .drop strong { display: block; font-size: 1.05rem; margin-bottom: 0.25rem; }
+  .drop p { margin: 0; color: var(--muted); }
+  .drop.over { border-color: var(--gold); }
+  .drop[data-bucket="plain"] { border-style: dashed; }
+  .drop[data-bucket="gate"] { border-style: double; border-width: 4px; }
+  .drop[data-bucket="lock"] { border-style: solid; box-shadow: inset 4px 0 0 var(--gold); }
+  .buckets { display: flex; gap: 0.45rem; flex-wrap: wrap; margin: 0.4rem 0 0.7rem; }
+  .buckets button { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
+  .buckets button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .tiles { display: grid; gap: 0.45rem; margin: 0 0 0.9rem; }
+  .tile {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+    width: 100%; text-align: left; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 10px; padding: 0.65rem 0.75rem;
+    font-weight: 550;
+  }
+  .tile[data-bucket="plain"] { border-style: dashed; }
+  .tile[data-bucket="gate"] { border-style: double; border-width: 3px; }
+  .tile[data-bucket="lock"] { border-style: solid; box-shadow: inset 4px 0 0 var(--gold); }
+  .tile[aria-selected="true"] { border-color: var(--gold); }
+  .tile .kind { color: var(--muted); font-size: 0.85rem; font-weight: 550; }
+  .fields { display: grid; gap: 0.55rem; margin: 0.2rem 0 0.8rem; }
+  .fields input {
+    width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--field); color: var(--ink); font: inherit;
+  }
+  .links { display: grid; gap: 0.55rem; margin: 0.3rem 0 1rem; }
+  .link-row { display: flex; justify-content: space-between; gap: 0.75rem; align-items: flex-start; }
+  .link-row button { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
+  .empty { color: var(--muted); margin: 0.2rem 0 1rem; }
+  #status { min-height: 1.3rem; margin: 0.35rem 0 0.6rem; }
   @media (max-width: 480px) {
     body { padding: 1.1rem 0.9rem 2.4rem; }
     h1 { font-size: 1.55rem; }
-    button, .actions button { width: 100%; }
+    button, .actions button, .tile, .link-row button { width: 100%; }
+    .link-row, .tile { align-items: stretch; flex-direction: column; }
     .actions { flex-direction: column; }
     dl { grid-template-columns: 1fr; gap: 0.1rem; }
     dd { margin-bottom: 0.65rem; }
@@ -114,11 +151,31 @@ PAGE = r"""<!DOCTYPE html>
     <span class="meta">Aziel Eliab</span>
   </header>
   <main>
-    <h1>Compare a finished job</h1>
-    <p class="lede">ShadowLock compares a job you already finished to a guess, then forgets the file.</p>
-    <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
-    <button class="primary" id="import-btn" type="button">Import JSON file</button>
+    <h1>Link a product</h1>
+    <p class="lede">Drag a Softwares tile here to hold that product’s inputs for business review.</p>
+    <div id="drop-zone" class="drop" tabindex="0" role="region" aria-label="Drop a Softwares tile">
+      <strong id="drop-title">Drop a Softwares tile here</strong>
+      <p id="drop-hint">Or choose a product and press Link. Plain, Gate, and Lock use the same step.</p>
+    </div>
+    <p id="status" aria-live="polite"></p>
+    <div class="fields">
+      <label for="business-label">Business label <span class="kind">(optional)</span></label>
+      <input id="business-label" type="text" autocomplete="off" placeholder="Name this link for your business">
+      <label for="input-handle">Input id or path <span class="kind">(optional)</span></label>
+      <input id="input-handle" type="text" autocomplete="off" placeholder="Leave blank to use the product’s inputs handle">
+    </div>
+    <button class="primary" id="link-selected" type="button">Link</button>
     <p class="hint">Optional check in a terminal: <code>shadowlock doctor</code></p>
+    <h2>Linked inputs</h2>
+    <p id="links-empty" class="empty">Nothing linked yet.</p>
+    <div id="links" class="links"></div>
+    <p id="link-path" class="hint"></p>
+    <div class="buckets" role="group" aria-label="Softwares bucket">
+      <button type="button" id="bucket-plain" aria-pressed="true">Plain</button>
+      <button type="button" id="bucket-gate" aria-pressed="false">Gate</button>
+      <button type="button" id="bucket-lock" aria-pressed="false">Lock</button>
+    </div>
+    <div id="tiles" class="tiles" role="listbox" aria-label="Softwares"></div>
     <p class="err" id="err" hidden></p>
 
     <section id="result" hidden>
@@ -132,6 +189,8 @@ PAGE = r"""<!DOCTYPE html>
     <details id="advanced-panel">
       <summary>Advanced</summary>
       <form id="mirror-form" autocomplete="off">
+        <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
+        <button class="ghost" id="import-btn" type="button">Import JSON file</button>
         <label for="observed">Job JSON</label>
         <textarea id="observed" rows="7" placeholder='{"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"}'></textarea>
         <label for="counterfactual">Guess (duration, cost, revenue)</label>
@@ -149,7 +208,7 @@ PAGE = r"""<!DOCTYPE html>
 
     <details>
       <summary>About</summary>
-      <p>Version __VERSION__. ShadowLock reads a job you already have, compares it with a guess, and drops what it read. It can attach to AZ-OS on this computer when the ethics check passes. Bound to 127.0.0.1. Uploads stay in this process and are not written to disk.</p>
+      <p>Version __VERSION__. A linked product keeps a local record: slug, kind, input id, input path, linked time, and business label. 4DMap reads that same file. Comparing a job file does not keep the file. Bound to 127.0.0.1. It can attach to AZ-OS on this computer when the ethics check passes.</p>
       <p>Author: Aziel Eliab.</p>
     </details>
   </main>
@@ -278,9 +337,228 @@ PAGE = r"""<!DOCTYPE html>
   });
 })();
 </script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const zone = $("drop-zone");
+  let cards = [];
+  let bucket = "plain";
+  let selected = "";
+  let dragging = null;
+  const dropCopy = {
+    plain: ["Plain", "Drop to link this Plain product’s inputs."],
+    gate: ["Gate", "Drop to link this Gate product’s inputs."],
+    lock: ["Lock", "Drop to link this Lock product’s inputs."],
+  };
+  function fail(msg) {
+    $("err").hidden = false;
+    $("err").textContent = msg;
+  }
+  function say(msg) { $("status").textContent = msg; }
+  function payload() {
+    return {
+      slug: selected,
+      business_label: $("business-label").value,
+      input: $("input-handle").value,
+    };
+  }
+  async function refreshLinks() {
+    const res = await fetch("/api/links");
+    const data = await res.json();
+    const links = data.links || [];
+    $("links").textContent = "";
+    $("links-empty").hidden = links.length > 0;
+    if (data.path) $("link-path").textContent = "Link file: " + data.path;
+    for (const row of links) {
+      const card = document.createElement("article");
+      card.className = "card link-row";
+      card.dataset.bucket = row.kind || row.bucket || "";
+      const text = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = (row.business_label || row.name || row.slug) + " · " + (row.kind || "");
+      const detail = document.createElement("p");
+      detail.className = "hint";
+      detail.textContent = "Input " + (row.input_id || "—") + " · " + (row.input_path || "—");
+      text.append(title, detail);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "ghost";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", async () => {
+        const gone = await fetch("/api/links", {
+          method: "DELETE",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({slug: row.slug, input_id: row.input_id}),
+        });
+        const body = await gone.json();
+        if (!gone.ok) { fail(body.error || "Could not remove that link."); return; }
+        say("Removed " + (row.business_label || row.slug) + ".");
+        refreshLinks();
+      });
+      card.append(text, remove);
+      $("links").append(card);
+    }
+  }
+  function renderTiles() {
+    const box = $("tiles");
+    box.textContent = "";
+    const shown = cards.filter((card) => card.bucket === bucket);
+    for (const card of shown) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.tabIndex = 0;
+      tile.draggable = true;
+      tile.dataset.slug = card.slug;
+      tile.dataset.bucket = card.bucket;
+      tile.setAttribute("role", "option");
+      tile.setAttribute("aria-selected", card.slug === selected ? "true" : "false");
+      const name = document.createElement("span");
+      name.textContent = card.name;
+      const kind = document.createElement("span");
+      kind.className = "kind";
+      kind.textContent = card.bucket === "plain" ? "Plain" : card.bucket === "gate" ? "Gate" : "Lock";
+      tile.append(name, kind);
+      tile.addEventListener("click", () => {
+        selected = card.slug;
+        renderTiles();
+        say(card.name + " selected. Press Link, or drag it onto the target.");
+      });
+      tile.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          selected = card.slug;
+          linkSelected();
+        }
+      });
+      tile.addEventListener("dragstart", (ev) => {
+        dragging = card;
+        selected = card.slug;
+        zone.dataset.slug = card.slug;
+        ev.dataTransfer.setData("application/x-shadowlock-software", card.slug);
+        ev.dataTransfer.setData("text/plain", card.slug);
+        ev.dataTransfer.effectAllowed = "copy";
+        zone.dataset.bucket = card.bucket;
+        zone.classList.add("over");
+        const copy = dropCopy[card.bucket];
+        $("drop-title").textContent = copy[0];
+        $("drop-hint").textContent = copy[1];
+      });
+      tile.addEventListener("dragend", () => {
+        zone.classList.remove("over");
+        window.setTimeout(() => {
+          dragging = null;
+          delete zone.dataset.bucket;
+          $("drop-title").textContent = "Drop a Softwares tile here";
+          $("drop-hint").textContent = "Or choose a product and press Link. Plain, Gate, and Lock use the same step.";
+        }, 50);
+      });
+      box.append(tile);
+    }
+  }
+  async function linkSlug(slug) {
+    $("err").hidden = true;
+    selected = slug;
+    const res = await fetch("/api/links", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload()),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      fail((data.error || "Could not link that product.") + " Choose a Softwares tile, then press Link.");
+      return;
+    }
+    const row = data.link || {};
+    say("Linked " + (row.business_label || row.name || slug) + ". Its inputs are held for review.");
+    $("business-label").value = "";
+    $("input-handle").value = "";
+    renderTiles();
+    await refreshLinks();
+  }
+  function linkSelected() {
+    if (!selected) {
+      fail("Choose a Softwares product, then press Link.");
+      return;
+    }
+    linkSlug(selected);
+  }
+  $("link-selected").addEventListener("click", linkSelected);
+  for (const name of ["plain", "gate", "lock"]) {
+    $("bucket-" + name).addEventListener("click", () => {
+      bucket = name;
+      for (const other of ["plain", "gate", "lock"]) {
+        $("bucket-" + other).setAttribute("aria-pressed", other === name ? "true" : "false");
+      }
+      renderTiles();
+    });
+  }
+  zone.addEventListener("dragover", (ev) => {
+    ev.preventDefault();
+    zone.classList.add("over");
+    if (dragging) zone.dataset.bucket = dragging.bucket;
+  });
+  zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+  zone.addEventListener("drop", async (ev) => {
+    ev.preventDefault();
+    zone.classList.remove("over");
+    const slug = (dragging && dragging.slug) || zone.dataset.slug || ev.dataTransfer.getData("application/x-shadowlock-software") || ev.dataTransfer.getData("text/plain");
+    const file = ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (file && !slug) {
+      fail("Choose the Softwares product this file belongs to, then drop the file again.");
+      return;
+    }
+    if (file) {
+      $("input-handle").value = file.name;
+    }
+    if (!slug) {
+      fail("Drop a Softwares tile, or choose one and press Link.");
+      return;
+    }
+    await linkSlug(slug.trim());
+  });
+  zone.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") linkSelected();
+  });
+  fetch("/api/software").then((res) => res.json()).then((data) => {
+    cards = data.software || [];
+    renderTiles();
+  }).catch(() => fail("The Softwares list did not load. Reload this page."));
+  refreshLinks().catch(() => fail("Linked inputs did not load. Reload this page."));
+})();
+</script>
 </body>
 </html>
 """.replace("__VERSION__", __version__)
+
+
+def _software_payload() -> dict[str, Any]:
+    from shadowlock.catalog import load_catalog, software_cards
+
+    cards = software_cards()
+    catalog = load_catalog()
+    return {
+        "ok": True,
+        "author": "Aziel Eliab",
+        "product": "ShadowLock",
+        "count": len(cards),
+        "sort_law": catalog.get("sort_law"),
+        "software": cards,
+    }
+
+
+def _post_link_from(body: dict[str, Any]) -> dict[str, Any]:
+    from shadowlock.links import link_software, public_view
+
+    row = link_software(
+        str(body.get("slug") or ""),
+        input_id=body.get("input_id"),
+        input_path=body.get("input_path"),
+        business_label=body.get("business_label"),
+        shared_input=body.get("input"),
+    )
+    view = public_view()
+    view["link"] = row
+    return view
 
 
 def _health_payload() -> dict[str, Any]:
@@ -442,6 +720,14 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/health":
             self._json(200, _health_payload())
             return
+        if path == "/api/software":
+            self._json(200, _software_payload())
+            return
+        if path == "/api/links":
+            from shadowlock.links import public_view
+
+            self._json(200, public_view())
+            return
         self._json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
@@ -470,7 +756,34 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as exc:  # noqa: BLE001
                 self._json(400, {"error": str(exc)})
             return
+        if path == "/api/links":
+            try:
+                self._json(200, _post_link_from(self._read_json()))
+            except ValueError as exc:
+                self._json(400, {"error": str(exc)})
+            except Exception as exc:  # noqa: BLE001
+                self._json(400, {"error": str(exc)})
+            return
         self._json(404, {"error": "not found"})
+
+    def do_DELETE(self) -> None:  # noqa: N802
+        if not self._loopback_ok():
+            self._json(403, {"error": "loopback only"})
+            return
+        path = urlparse(self.path).path
+        if path != "/api/links":
+            self._json(404, {"error": "not found"})
+            return
+        from shadowlock.links import public_view, unlink_software
+
+        try:
+            body = self._read_json()
+            unlink_software(str(body.get("slug") or ""), body.get("input_id"))
+            self._json(200, public_view())
+        except ValueError as exc:
+            self._json(400, {"error": str(exc)})
+        except Exception as exc:  # noqa: BLE001
+            self._json(400, {"error": str(exc)})
 
 
 def make_server(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:

@@ -53,6 +53,7 @@ commands:
   ui         Open the local page (http://127.0.0.1:8764)
   doctor     Check that ShadowLock can run
   observe    Compare a job file and print a short summary
+  links      Show Softwares linked for review
   version    Print the package version
 
 advanced:
@@ -66,6 +67,8 @@ examples:
   shadowlock doctor
   shadowlock observe --in jobs.jsonl
   shadowlock observe --in jobs.jsonl --json
+  shadowlock links
+  shadowlock links --json
   shadowlock attach --json
 
 Human text is the default. Add --json for machine output.
@@ -247,6 +250,15 @@ def _build_parser() -> argparse.ArgumentParser:
         dest="as_json",
         help="Print the attach receipt as JSON.",
     )
+
+    p_links = sub.add_parser(
+        "links",
+        help="Show Softwares linked for review.",
+        description="Show the local link record other Softwares, including 4DMap, can read.",
+        epilog="examples:\n  shadowlock links\n  shadowlock links --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p_links.add_argument("--json", action="store_true", dest="as_json", help="Print the link record as JSON.")
 
     p_doc = sub.add_parser(
         "doctor",
@@ -448,6 +460,16 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.cmd == "attach":
         return _attach_azos(args)
+
+    if args.cmd == "links":
+        from shadowlock.links import format_links_human, public_view
+
+        view = public_view()
+        if getattr(args, "as_json", False):
+            sys.stdout.write(json.dumps(view, indent=2, ensure_ascii=False) + "\n")
+        else:
+            sys.stdout.write(format_links_human(view))
+        return 0 if view.get("ok") else 2
 
     if args.cmd == "doctor":
         from shadowlock.doctor import run_doctor

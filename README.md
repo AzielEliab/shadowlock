@@ -9,7 +9,7 @@ Compares a finished job to a guess, then forgets the file.
 
 1. Install: `python -m venv .venv && source .venv/bin/activate && pip install -e .`
 2. Open the local page: `shadowlock ui`
-3. At http://127.0.0.1:8764, tap **Import JSON file**. Optional check: `shadowlock doctor`.
+3. At http://127.0.0.1:8764, drag a Softwares tile onto ShadowLock, or select one and press **Link**. Optional check: `shadowlock doctor`.
 
 Loopback only (`127.0.0.1`). No CDN, no telemetry.
 
@@ -19,7 +19,23 @@ Loopback only (`127.0.0.1`). No CDN, no telemetry.
 
 **THIS IS NOT:** a dispatcher, optimizer, scheduler, predictor, people profiler, or truth score.
 
-It OS-hooks into AZ-OS for process/job observation under ethics policy. **Attach via AZ-OS** and **Export JSON report** are under Advanced on the local page.
+It OS-hooks into AZ-OS for process/job observation under ethics policy. **Import JSON file**, **Attach via AZ-OS**, and **Export JSON report** are under Advanced on the local page.
+
+## Link record
+
+Other Softwares, including 4DMap, read the same local record ShadowLock writes when you link a product.
+
+| | |
+|---|---|
+| File | `~/.local/share/shadowlock/links.json` |
+| Override | `SHADOWLOCK_LINKS` or `$XDG_DATA_HOME/shadowlock/links.json` |
+| API | `GET http://127.0.0.1:8764/api/links` |
+| Catalog | `GET http://127.0.0.1:8764/api/software` |
+| Terminal | `shadowlock links` or `shadowlock links --json` |
+
+Each link stores `slug`, `kind` (`plain`, `gate`, or `lock`), `input_id`, `input_path`, `linked_at`, and `business_label`. The kind follows the suite order: Plain, then Gate, then Lock. Clock is not Lock.
+
+When the file is missing, or `links` is empty, nothing is linked. The page says so. Linking does not copy a job file into this record.
 
 > Change is optional. Truth is not.
 

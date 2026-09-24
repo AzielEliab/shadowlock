@@ -45,6 +45,9 @@ Issues = "https://github.com/AzielEliab/shadowlock/issues"
 [tool.setuptools.packages.find]
 include = ["shadowlock*"]
 
+[tool.setuptools.package-data]
+shadowlock = ["software_catalog.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
