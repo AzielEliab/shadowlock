@@ -17,7 +17,9 @@ class ShadowLockApp extends StatelessWidget {
     return MaterialApp(
       title: 'ShadowLock',
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
+      theme: buildAppTheme(Brightness.light),
+      darkTheme: buildAppTheme(Brightness.dark),
+      themeMode: ThemeMode.system,
       home: const MirrorPage(),
     );
   }
@@ -55,20 +57,13 @@ class _MirrorPageState extends State<MirrorPage> {
     final delta = ow - cw;
     setState(() {
       _report = [
-        'ShadowLock report (anonymous aggregate; session only)',
-        'observed_hashed_id: ${_hid(obs)}',
-        'counterfactual_hashed_id: ${_hid(cf)}',
-        'observed_chars: ${obs.length}',
-        'counterfactual_chars: ${cf.length}',
-        'observed_words: $ow',
-        'counterfactual_words: $cw',
-        'word_count_variance: $delta',
-        'sample_rate_target: 0.2  (1-in-5 on streamed jobs; this screen reports the pair you typed)',
-        'notes:',
-        '- Identifiers are sha256 hex[:12] only.',
-        '- No person, team, or department names are emitted.',
-        '- Zero-retention: this report lives in RAM until Forget.',
-        '- Change is optional. Truth is not.',
+        'Compared the text on this screen. Nothing was saved.',
+        'Observed words: $ow',
+        'Guess words: $cw',
+        'Word-count gap: $delta',
+        'Observed id: ${_hid(obs)}',
+        'Guess id: ${_hid(cf)}',
+        'Ids are sha256 hex, first 12 characters.',
       ].join('\n');
     });
   }
@@ -84,53 +79,72 @@ class _MirrorPageState extends State<MirrorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ShadowLock')),
+      appBar: AppBar(
+        title: const Text('ShadowLock'),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Center(child: Text('Aziel Eliab')),
+          ),
+        ],
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         children: [
-          const Text(
-            'Change is optional. Truth is not.',
-            style: TextStyle(color: kGold, fontStyle: FontStyle.italic, fontSize: 16),
+          Text(
+            'Compare a finished job',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           const Text(
-            'Zero-retention outcome mirror. OS-hooks into AZ-OS under ethics '
-            'policy. Nothing is stored. Not a dispatcher, optimizer, scheduler, '
-            'or learning system.',
+            'Type the job you already finished. ShadowLock counts the words, '
+            'hashes the text, and keeps the result on this screen only.',
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _observed,
             maxLines: 6,
             decoration: const InputDecoration(
-              labelText: 'Observed outcome',
+              labelText: 'Finished job',
               alignLabelWithHint: true,
             ),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _counterfactual,
-            maxLines: 6,
-            decoration: const InputDecoration(
-              labelText: 'Counterfactual expectation',
-              alignLabelWithHint: true,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
+          const SizedBox(height: 16),
+          FilledButton(onPressed: _makeReport, child: const Text('Show report')),
+          const SizedBox(height: 8),
+          OutlinedButton(onPressed: _forget, child: const Text('Forget')),
+          const SizedBox(height: 16),
+          ExpansionTile(
+            title: const Text('Advanced'),
             children: [
-              FilledButton(onPressed: _makeReport, child: const Text('Report')),
-              const SizedBox(width: 8),
-              OutlinedButton(onPressed: _forget, child: const Text('Forget')),
+              TextField(
+                controller: _counterfactual,
+                maxLines: 6,
+                decoration: const InputDecoration(
+                  labelText: 'Guess',
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Forget drops both fields and the report. No .shadowlock store, no sqlite, no job log.',
-            style: TextStyle(color: kGoldDim, fontSize: 12),
+          ExpansionTile(
+            title: const Text('About'),
+            children: const [
+              Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Author: Aziel Eliab. This screen reports word counts and '
+                  'hashed ids for the text you type. It does not write a file. '
+                  'The desktop command shadowlock ui compares money on a job file.',
+                ),
+              ),
+            ],
           ),
           if (_report != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Text('Simple summary', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),

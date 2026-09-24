@@ -1,8 +1,10 @@
 # ShadowLock — iPhone & Android
 
-Two text fields (observed vs counterfactual) and an anonymous report. Forget drops everything. Zero-retention: nothing is written to disk.
+1. `cd mobile`
+2. `flutter create --org com.azieeliab --project-name shadowlock . && flutter pub get`
+3. `flutter run`, then tap **Show report**.
 
-Offline. No analytics. Dark matte / gold.
+The screen counts words in the job you type and forgets them when you tap Forget. Light and dark follow the phone. Offline. No analytics.
 
 Application id: `com.azieeliab.shadowlock`
 

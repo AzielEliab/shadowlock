@@ -188,7 +188,7 @@ def test_cli_attach_and_observe_azos(fake_azos, capsys) -> None:
     from shadowlock.cli import main
 
     host, port = fake_azos
-    assert main(["attach", "--host", host, "--port", str(port)]) == 0
+    assert main(["attach", "--host", host, "--port", str(port), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
     assert data["attached"] is True
     assert data["author"] == "Aziel Eliab"

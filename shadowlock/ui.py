@@ -28,178 +28,157 @@ PAGE = r"""<!DOCTYPE html>
 <title>ShadowLock</title>
 <style>
   :root {
-    --bg: #0f1419; --panel: #171e27; --ink: #e8edf2; --muted: #8b97a6;
-    --line: #2a3544; --gold: #d4bc6a; --focus: #7aa2d4; --bad: #d4534b;
-    --ok: #7dcea0;
+    color-scheme: light dark;
+    --bg: #f7f4ec; --panel: #fffdf8; --ink: #1c1914; --muted: #4e483f;
+    --line: #ddd4c2; --gold: #c9a227; --focus: #c9a227; --bad: #8f2d2d;
+    --ok: #1d6b42; --field: #fffdf8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12110e; --panel: #1c1b17; --ink: #f4efe4; --muted: #c8bba6;
+      --line: #3d382e; --gold: #c9a227; --focus: #c9a227; --bad: #f0a8a2;
+      --ok: #9ddebe; --field: #14130f;
+    }
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0; background: var(--bg); color: var(--ink);
-    font-family: system-ui, "Segoe UI", sans-serif; line-height: 1.45;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5;
   }
-  body { max-width: 46rem; margin: 0 auto; padding: 2.1rem 1.2rem 4rem; }
-  .tag {
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  body { max-width: 40rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+  .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.75rem;
   }
-  h1 { font-size: 2rem; font-weight: 650; letter-spacing: 0.04em; margin: 0.35rem 0 0.25rem; }
-  .motto { color: var(--gold); font-style: italic; margin: 0 0 0.85rem; font-size: 1.05rem; }
-  .lede { color: var(--muted); margin: 0 0 1.1rem; max-width: 40rem; }
-  .limit { color: var(--gold); margin: 0 0 1.4rem; font-size: 0.95rem; }
-  fieldset {
-    border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
-    padding: 1.1rem 1.15rem 1.2rem; margin: 0 0 1rem;
-  }
-  legend {
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0 0.4rem;
-  }
-  label { display: block; font-size: 0.92rem; margin: 0.85rem 0 0.3rem; }
-  label .kicker {
-    display: block; font-family: ui-monospace, Menlo, Consolas, monospace;
-    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 0.12rem;
-  }
-  textarea, input[type=file] {
-    width: 100%; padding: 0.55rem 0.65rem; border: 1px solid var(--line);
-    border-radius: 6px; background: #10161d; color: var(--ink);
+  .brand { font-weight: 650; letter-spacing: 0.01em; }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  h1 { font-size: 1.85rem; font-weight: 650; margin: 0 0 0.45rem; line-height: 1.2; }
+  .lede { margin: 0 0 1.25rem; max-width: 36rem; font-size: 1.05rem; }
+  .hint { color: var(--muted); margin: 0.85rem 0 1.4rem; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.92em; }
+  label { display: block; font-size: 0.95rem; margin: 0.9rem 0 0.35rem; }
+  textarea {
+    width: 100%; max-width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--field); color: var(--ink);
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.88rem;
   }
-  textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
-  .actions { display: flex; gap: 0.65rem; flex-wrap: wrap; margin: 0.4rem 0 1.2rem; }
+  button, summary {
+    font: inherit;
+  }
   button {
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem;
-    letter-spacing: 0.04em; padding: 0.65rem 1rem; border-radius: 8px;
-    border: 1px solid var(--ink); background: var(--ink); color: var(--bg);
-    cursor: pointer; font-weight: 650;
+    padding: 0.7rem 1.05rem; border-radius: 8px; border: 1px solid var(--ink);
+    background: var(--ink); color: var(--bg); cursor: pointer; font-weight: 650;
   }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-  button.ghost { background: transparent; color: var(--ink); }
-  .addfile {
-    display: flex; align-items: center; justify-content: center; text-align: center;
-    width: 100%; min-height: 7.2rem; font-size: 1.55rem; font-weight: 700;
-    letter-spacing: 0.02em; border: 2px dashed var(--gold); background: #1a160c;
-    color: var(--ink); border-radius: 14px; cursor: pointer; margin: 0.2rem 0 0.7rem;
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.primary { min-height: 2.75rem; }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
+  button:focus-visible, summary:focus-visible, textarea:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 3px solid var(--focus); outline-offset: 2px;
   }
-  .addfile:hover { filter: brightness(1.08); }
-  .views { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin: 0 0 1rem; }
-  .views button { border: 0; border-radius: 0; padding: 0.35rem 0.9rem; background: transparent; color: var(--muted); }
-  .views button.on { background: var(--gold); color: #14110a; font-weight: 650; }
-  h2 {
-    font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); font-weight: 600; margin: 1.2rem 0 0.7rem;
+  .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1rem 0 0.4rem; }
+  details {
+    border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+    padding: 0.75rem 1rem; margin: 0 0 0.8rem;
   }
+  summary { cursor: pointer; font-weight: 650; }
+  h2 { font-size: 1.15rem; font-weight: 650; margin: 0 0 0.7rem; }
   .card {
     border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
-    padding: 0.85rem 1rem;
+    padding: 1rem 1.05rem;
   }
-  dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.3rem 1rem; margin: 0; }
+  dl { display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 1rem; margin: 0; }
   dt { color: var(--muted); }
+  dd { margin: 0; }
   pre {
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.8rem;
-    white-space: pre-wrap; word-break: break-word; margin: 0;
+    white-space: pre-wrap; overflow-wrap: anywhere; margin: 0.6rem 0 0;
   }
-  .plain { font-size: 1.15rem; margin: 0 0 0.7rem; }
-  .err { color: var(--bad); }
+  .plain { font-size: 1.05rem; margin: 0 0 0.8rem; }
+  .err { color: var(--bad); margin: 0.6rem 0 0; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-  .hidden { display: none; }
-  footer { margin-top: 2rem; color: var(--muted); font-size: 0.88rem; }
-  .foot-note { font-style: italic; }
+  footer { margin-top: 1.6rem; color: var(--muted); font-size: 0.9rem; }
+  @media (max-width: 480px) {
+    body { padding: 1.1rem 0.9rem 2.4rem; }
+    h1 { font-size: 1.55rem; }
+    button, .actions button { width: 100%; }
+    .actions { flex-direction: column; }
+    dl { grid-template-columns: 1fr; gap: 0.1rem; }
+    dd { margin-bottom: 0.65rem; }
+  }
 </style>
 </head>
 <body>
-  <header>
-    <div class="tag">ShadowLock · __VERSION__ · Aziel Eliab · loopback · zero-retention</div>
-    <h1>ShadowLock</h1>
-    <p class="motto">Change is optional. Truth is not.</p>
-    <p class="lede">
-      Import a job file you already have, or attach via AZ-OS.
-      The page compares it to a guess, shows money made / lost / left on
-      the table, and forgets the file. Bound to 127.0.0.1 only. Nothing
-      is written to disk.
-    </p>
-    <p class="limit">OS-hooks into AZ-OS for process/job observation under ethics policy. This is a comparison, not a dispatcher, optimizer, scheduler, or truth score.</p>
+  <header class="top">
+    <span class="brand">ShadowLock</span>
+    <span class="meta">Aziel Eliab</span>
   </header>
+  <main>
+    <h1>Compare a finished job</h1>
+    <p class="lede">ShadowLock compares a job you already finished to a guess, then forgets the file.</p>
+    <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
+    <button class="primary" id="import-btn" type="button">Import JSON file</button>
+    <p class="hint">Optional check in a terminal: <code>shadowlock doctor</code></p>
+    <p class="err" id="err" hidden></p>
 
-  <form id="mirror-form" autocomplete="off">
-    <fieldset>
-      <legend>Import</legend>
-      <p class="lede" style="margin-bottom:0.4rem">Tap the big button to pick a JSON file. Paste is optional.</p>
-      <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
-      <button class="addfile" id="import-btn" type="button">Import JSON file</button>
-      <label for="observed">
-        <span class="kicker">Observed outcome (or paste)</span>
-        JSON object: task_class, urgency, actual_duration, actual_cost, actual_revenue, actual_outcome.
-      </label>
-      <textarea id="observed" rows="8" placeholder='{"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"}'></textarea>
-      <label for="counterfactual">
-        <span class="kicker">Counterfactual</span>
-        JSON prior for the class: duration / cost / revenue as [low, high] or a midpoint.
-      </label>
-      <textarea id="counterfactual" rows="6" placeholder='{"duration":[25,45],"cost":[70,110],"revenue":[180,260]}'></textarea>
-    </fieldset>
-    <div class="actions">
-      <button type="submit" id="run">Show report</button>
-      <button type="button" class="ghost" id="attach">Attach via AZ-OS</button>
-      <button type="button" class="ghost" id="sample">Load sample</button>
-      <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
-    </div>
-  </form>
+    <section id="result" hidden>
+      <h2>Simple summary</h2>
+      <div class="card">
+        <p class="plain" id="plain"></p>
+        <dl id="summary"></dl>
+      </div>
+    </section>
 
-  <section id="result" hidden>
-    <h2>View</h2>
-    <div class="views" role="group" aria-label="Simple or advanced">
-      <button type="button" id="view-simple" class="on">Simple</button>
-      <button type="button" id="view-advanced">Advanced</button>
-    </div>
-    <div class="card">
-      <p class="plain" id="plain"></p>
-      <dl id="summary"></dl>
-    </div>
-    <div id="advanced" class="hidden">
-      <h2>JSON</h2>
-      <div class="card"><pre id="json"></pre></div>
-    </div>
-  </section>
-  <p class="err" id="err" hidden></p>
+    <details id="advanced-panel">
+      <summary>Advanced</summary>
+      <form id="mirror-form" autocomplete="off">
+        <label for="observed">Job JSON</label>
+        <textarea id="observed" rows="7" placeholder='{"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"}'></textarea>
+        <label for="counterfactual">Guess (duration, cost, revenue)</label>
+        <textarea id="counterfactual" rows="5" placeholder='{"duration":[25,45],"cost":[70,110],"revenue":[180,260]}'></textarea>
+        <div class="actions">
+          <button type="submit" id="run">Show report</button>
+          <button type="button" class="ghost" id="attach">Attach via AZ-OS</button>
+          <button type="button" class="ghost" id="sample">Load sample</button>
+          <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
+        </div>
+        <h2>JSON</h2>
+        <pre id="json"></pre>
+      </form>
+    </details>
 
+    <details>
+      <summary>About</summary>
+      <p>Version __VERSION__. ShadowLock reads a job you already have, compares it with a guess, and drops what it read. It can attach to AZ-OS on this computer when the ethics check passes. Bound to 127.0.0.1. Uploads stay in this process and are not written to disk.</p>
+      <p>Author: Aziel Eliab.</p>
+    </details>
+  </main>
   <footer>
-    <p>Apache-2.0 · Aziel Eliab · July 2026 · Bound to 127.0.0.1 · <code>shadowlock ui</code></p>
-    <p class="foot-note">Zero-retention: uploads stay in this process and are not written to disk. AZ-OS hook is ethics-gated observation, not process control.</p>
+    <p>Aziel Eliab · 127.0.0.1 · <code>shadowlock ui</code></p>
   </footer>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
   let last = null;
-  let view = "simple";
   const SAMPLE_OBS = {"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"};
   const SAMPLE_CF = {"duration":[25,45],"cost":[70,110],"revenue":[180,260]};
   function fail(msg) { $("err").hidden = false; $("err").textContent = msg; }
-  function setView(name) {
-    view = name;
-    $("view-simple").classList.toggle("on", name === "simple");
-    $("view-advanced").classList.toggle("on", name === "advanced");
-    $("advanced").classList.toggle("hidden", name !== "advanced");
-  }
-  $("view-simple").addEventListener("click", () => setView("simple"));
-  $("view-advanced").addEventListener("click", () => setView("advanced"));
   function render(data) {
     last = data;
     $("result").hidden = false;
     const r = data.report || {};
     const L = r.ledger || {};
-    $("plain").textContent = "Compared this job to a guess. Names are dropped. Nothing is saved.";
+    $("plain").textContent = "Compared this job to a guess. Names are left out. Nothing is saved.";
     $("summary").innerHTML =
-      "<dt>jobs looked at</dt><dd>" + (r.observed ?? "—") + "</dd>" +
-      "<dt>jobs sampled</dt><dd>" + (r.sampled ?? "—") + "</dd>" +
-      "<dt>money made</dt><dd>" + (L.money_made ?? "—") + "</dd>" +
-      "<dt>money lost</dt><dd>" + (L.money_lost ?? "—") + "</dd>" +
-      "<dt>left on the table</dt><dd>" + (L.money_left_on_table ?? "—") + "</dd>" +
-      "<dt>net gap</dt><dd>" + (L.net_variance ?? "—") + "</dd>";
+      "<dt>Jobs looked at</dt><dd>" + (r.observed ?? "—") + "</dd>" +
+      "<dt>Jobs sampled</dt><dd>" + (r.sampled ?? "—") + "</dd>" +
+      "<dt>Money made</dt><dd>" + (L.money_made ?? "—") + "</dd>" +
+      "<dt>Money lost</dt><dd>" + (L.money_lost ?? "—") + "</dd>" +
+      "<dt>Left on the table</dt><dd>" + (L.money_left_on_table ?? "—") + "</dd>" +
+      "<dt>Net gap</dt><dd>" + (L.net_variance ?? "—") + "</dd>";
     $("json").textContent = JSON.stringify(data, null, 2);
     $("export").disabled = false;
-    setView(view);
+    if ($("result").scrollIntoView) $("result").scrollIntoView({block: "nearest"});
   }
   async function runMirror(observed, counterfactual) {
     $("err").hidden = true;
@@ -222,7 +201,7 @@ PAGE = r"""<!DOCTYPE html>
     try {
       observed = JSON.parse($("observed").value || "{}");
       counterfactual = JSON.parse($("counterfactual").value || "{}");
-    } catch (e) { fail("That JSON is not valid."); return; }
+    } catch (e) { fail("That JSON is not valid. Check the braces, then try Show report again."); return; }
     await runMirror(observed, counterfactual);
   });
   $("import-btn").addEventListener("click", () => $("import-json").click());
@@ -232,7 +211,7 @@ PAGE = r"""<!DOCTYPE html>
     const reader = new FileReader();
     reader.onload = () => {
       let obj;
-      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("That file is not valid JSON."); return; }
+      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("That file is not valid JSON. Pick another JSON file."); return; }
       const observed = obj.observed || obj.payload && obj.payload.observed || obj;
       const counterfactual = obj.counterfactual || (obj.payload && obj.payload.counterfactual) || {};
       $("observed").value = JSON.stringify(observed, null, 2);
@@ -263,13 +242,15 @@ PAGE = r"""<!DOCTYPE html>
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+      if (!res.ok || (data.error && !data.report)) {
+        throw new Error((data.error || ("HTTP " + res.status)) + " Next: shadowlock doctor");
+      }
       if (data.report) render(data);
       else {
         $("result").hidden = false;
         $("plain").textContent = data.attached
-          ? "Attached via AZ-OS. Ethics passed. No jobs sampled yet."
-          : "AZ-OS attach did not complete.";
+          ? "Attached to AZ-OS. The ethics check passed. No jobs sampled yet."
+          : "AZ-OS attach did not complete. Open Advanced and try again, or run shadowlock doctor.";
         $("summary").innerHTML =
           "<dt>attached</dt><dd>" + (data.attached ? "yes" : "no") + "</dd>" +
           "<dt>protocol</dt><dd>" + (data.protocol || "—") + "</dd>" +
@@ -300,6 +281,18 @@ PAGE = r"""<!DOCTYPE html>
 </body>
 </html>
 """.replace("__VERSION__", __version__)
+
+
+def _health_payload() -> dict[str, Any]:
+    return {
+        "ok": True,
+        "bind_host": DEFAULT_HOST,
+        "name": "ShadowLock",
+        "author": "Aziel Eliab",
+        "azos_hook": True,
+        "ethics": "Integrity precedes execution.",
+        "version": __version__,
+    }
 
 
 def _as_range(value: Any) -> Any:
@@ -440,21 +433,14 @@ class Handler(BaseHTTPRequestHandler):
             return
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
+            accept = self.headers.get("Accept") or ""
+            if "application/json" in accept and "text/html" not in accept:
+                self._json(200, _health_payload())
+                return
             self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
             return
         if path == "/health":
-            self._json(
-                200,
-                {
-                    "ok": True,
-                    "bind_host": DEFAULT_HOST,
-                    "name": "ShadowLock",
-                    "author": "Aziel Eliab",
-                    "azos_hook": True,
-                    "ethics": "Integrity precedes execution.",
-                    "version": __version__,
-                },
-            )
+            self._json(200, _health_payload())
             return
         self._json(404, {"error": "not found"})
 
@@ -493,10 +479,13 @@ def make_server(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> Threading
     return ThreadingHTTPServer((host, port), Handler)
 
 
+def open_line(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> str:
+    return f"Open http://{host}:{port}/\n"
+
+
 def serve(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
     httpd = make_server(host, port)
-    sys.stdout.write(f"ShadowLock UI  http://{host}:{port}/\n")
-    sys.stdout.write("Local only. Zero-retention: payloads are not written to disk.\n")
+    sys.stdout.write(open_line(host, port))
     sys.stdout.flush()
     try:
         httpd.serve_forever()

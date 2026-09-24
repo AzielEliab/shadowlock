@@ -1,18 +1,17 @@
 """Command-line interface for ShadowLock.
 
-    shadowlock version
+Human text is the default. Add ``--json`` for the same machine payload
+the commands already returned. ``observe --stdout`` still prints that JSON.
+
+    shadowlock
     shadowlock ui [--host 127.0.0.1] [--port 8764]
     shadowlock doctor [--verify] [--json]
-    shadowlock import FILE.json
-    shadowlock export FILE.json
-    shadowlock attach [--host 127.0.0.1] [--port 8800]
-    shadowlock observe --azos [--stdout]
-    shadowlock observe --in jobs.jsonl --format jsonl|csv --out report.json
-    shadowlock observe --in jobs.jsonl --stdout
-
-``--out`` writes the anonymous summary JSON only (aggregates, hashed ids).
-Input files are opened read-only. Optional ``--airgap`` refuses proxy env vars.
-``attach`` / ``observe --azos`` OS-hook into AZ-OS under ethics policy.
+    shadowlock observe --in jobs.jsonl
+    shadowlock observe --in jobs.jsonl --json
+    shadowlock import FILE.json [--json]
+    shadowlock export FILE.json [--json]
+    shadowlock attach [--json]
+    shadowlock observe --azos --stdout
 """
 
 from __future__ import annotations
@@ -21,36 +20,128 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 from shadowlock import __version__
 from shadowlock.adapters import CsvAdapter, JsonlAdapter
 from shadowlock.errors import AirgapError, EthicsError, HookError, SessionForgottenError
 from shadowlock.session import ShadowLockSession, assert_airgap
 
+WELCOME = """\
+ShadowLock compares a finished job to a guess, then forgets the file.
+
+Open the local page:
+  shadowlock ui
+
+Or check that it can run:
+  shadowlock doctor
+
+Other starts:
+  shadowlock observe --in jobs.jsonl
+  shadowlock --help
+
+Author: Aziel Eliab
+"""
+
+HELP = """\
+usage: shadowlock [<command>] [options]
+
+ShadowLock compares a finished job to a guess, then forgets the file.
+Author: Aziel Eliab.
+
+commands:
+  ui         Open the local page (http://127.0.0.1:8764)
+  doctor     Check that ShadowLock can run
+  observe    Compare a job file and print a short summary
+  version    Print the package version
+
+advanced:
+  attach     Attach to AZ-OS on this computer (127.0.0.1:8800)
+  import     Read a JSON file you name
+  export     Write a JSON file you name
+
+examples:
+  shadowlock
+  shadowlock ui
+  shadowlock doctor
+  shadowlock observe --in jobs.jsonl
+  shadowlock observe --in jobs.jsonl --json
+  shadowlock attach --json
+
+Human text is the default. Add --json for machine output.
+observe also accepts --stdout for that same JSON.
+Run shadowlock <command> --help for one command.
+"""
+
+
+class RootParser(argparse.ArgumentParser):
+    def format_help(self) -> str:
+        return HELP
+
+    def error(self, message: str) -> None:
+        choice = _invalid_choice(message)
+        if choice is not None:
+            self.exit(
+                2,
+                f'Unknown command "{choice}". Try: shadowlock ui   or   shadowlock --help\n',
+            )
+        self.exit(2, f"shadowlock: {message}\nTry: shadowlock --help\n")
+
+
+class SubParser(argparse.ArgumentParser):
+    def error(self, message: str) -> None:
+        prog = self.prog
+        if "required" in message and "path" in message:
+            example = "report.json" if prog.endswith("export") else "examples/job.json"
+            text = f"{prog} needs a file.\nTry: {prog} {example}\n"
+        elif message.startswith("unrecognized arguments"):
+            text = f"Unknown option for {prog}.\nTry: {prog} --help\n"
+        else:
+            text = f"{prog}: {message}\nTry: {prog} --help\n"
+        self.exit(2, text)
+
+
+def _invalid_choice(message: str) -> str | None:
+    marker = "invalid choice: '"
+    if marker not in message:
+        return None
+    start = message.index(marker) + len(marker)
+    end = message.find("'", start)
+    if end < 0:
+        return None
+    return message[start:end]
+
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="shadowlock",
-        description=(
-            "ShadowLock — a read-only, zero-retention outcome mirror "
-            "(Aziel Eliab). OS-hooks into AZ-OS for process/job observation "
-            "under ethics policy. Observes; does not control. "
-            "Change is optional. Truth is not. "
-            "Local UI: `shadowlock ui` at http://127.0.0.1:8764."
-        ),
+    parser = RootParser(prog="shadowlock")
+    sub = parser.add_subparsers(dest="cmd", required=False, parser_class=SubParser)
+
+    sub.add_parser("version", help="Print the package version.")
+
+    p_ui = sub.add_parser(
+        "ui",
+        help="Open the local page at http://127.0.0.1:8764.",
+        description="Open the local page. Loopback only.",
+        epilog="Example: shadowlock ui",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    sub = parser.add_subparsers(dest="cmd", required=True)
-
-    sub.add_parser("version", help="Print package version.")
-
-    p_ui = sub.add_parser("ui", help="Run the localhost UI (127.0.0.1:8764).")
     p_ui.add_argument("--host", default="127.0.0.1", help="Bind host (default 127.0.0.1).")
     p_ui.add_argument("--port", type=int, default=8764, help="Bind port (default 8764).")
 
     p_obs = sub.add_parser(
         "observe",
-        help="Read a job file, sample 1 in 5, print or write an anonymous report.",
+        help="Compare a job file and print a short summary.",
+        description=(
+            "Compare a job file to a guess and print a short summary. "
+            "Add --json or --stdout for the anonymous JSON report."
+        ),
+        epilog=(
+            "examples:\n"
+            "  shadowlock observe --in jobs.jsonl\n"
+            "  shadowlock observe --in jobs.jsonl --json\n"
+            "  shadowlock observe --azos --stdout"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p_obs.add_argument(
         "--in",
@@ -73,6 +164,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_obs.add_argument(
         "--stdout",
         action="store_true",
+        help="Print the anonymous summary JSON to stdout.",
+    )
+    p_obs.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
         help="Print the anonymous summary JSON to stdout.",
     )
     p_obs.add_argument(
@@ -114,7 +211,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_att = sub.add_parser(
         "attach",
-        help="OS-hook into AZ-OS. Ethics-gated attach receipt. Does not control.",
+        help="Attach to AZ-OS on this computer. Ethics-gated. Observation only.",
+        description="Attach to AZ-OS on this computer under the ethics check.",
+        epilog="examples:\n  shadowlock attach\n  shadowlock attach --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p_att.add_argument("--host", default="127.0.0.1", help="AZ-OS host (default 127.0.0.1).")
     p_att.add_argument("--port", type=int, default=8800, help="AZ-OS port (default 8800).")
@@ -141,10 +241,19 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Input format when --in is set (default: infer).",
     )
+    p_att.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="Print the attach receipt as JSON.",
+    )
 
     p_doc = sub.add_parser(
         "doctor",
-        help="Check that ShadowLock can run. Speaks in plain words. No network.",
+        help="Check that ShadowLock can run.",
+        description="Check that ShadowLock can run. Plain lines. No network.",
+        epilog="examples:\n  shadowlock doctor\n  shadowlock doctor --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p_doc.add_argument(
         "--verify",
@@ -153,11 +262,25 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_doc.add_argument("--json", action="store_true", dest="as_json", help="Print doctor results as JSON.")
 
-    p_imp = sub.add_parser("import", help="Read a JSON file. Does not keep a hidden copy.")
+    p_imp = sub.add_parser(
+        "import",
+        help="Read a JSON file you name.",
+        description="Read a JSON file you name. Does not keep a hidden copy.",
+        epilog="examples:\n  shadowlock import examples/job.json\n  shadowlock import examples/job.json --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     p_imp.add_argument("path")
+    p_imp.add_argument("--json", action="store_true", dest="as_json", help="Print the import record as JSON.")
 
-    p_exp = sub.add_parser("export", help="Write a JSON file you name. Author Aziel Eliab.")
+    p_exp = sub.add_parser(
+        "export",
+        help="Write a JSON file you name.",
+        description="Write a JSON file you name. Author Aziel Eliab.",
+        epilog="examples:\n  shadowlock export report.json\n  shadowlock export report.json --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     p_exp.add_argument("path")
+    p_exp.add_argument("--json", action="store_true", dest="as_json", help="Print the export record as JSON.")
 
     return parser
 
@@ -175,8 +298,111 @@ def _adapter_for(path: Path, fmt: str | None):
     return JsonlAdapter(path)
 
 
+def _die(reason: str, hint: str) -> int:
+    sys.stderr.write(f"shadowlock: {reason}\nTry: {hint}\n")
+    return 2
+
+
+def _money(value: Any) -> str:
+    if isinstance(value, bool) or value is None:
+        return "—"
+    if isinstance(value, (int, float)):
+        return f"{value:.2f}"
+    return str(value)
+
+
+def format_report_human(data: dict[str, Any]) -> str:
+    ledger = data.get("ledger") if isinstance(data.get("ledger"), dict) else {}
+    lines = [
+        "Compared the jobs in this file to a guess.",
+        f"Jobs looked at: {data.get('observed', '—')}",
+        f"Jobs sampled: {data.get('sampled', '—')}",
+        f"Money made: {_money(ledger.get('money_made'))}",
+        f"Money lost: {_money(ledger.get('money_lost'))}",
+        f"Left on the table: {_money(ledger.get('money_left_on_table'))}",
+        f"Net gap: {_money(ledger.get('net_variance'))}",
+        "",
+        "Names are left out. ShadowLock does not keep a copy.",
+        "Full JSON: add --json",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def format_attach_human(data: dict[str, Any]) -> str:
+    ethics = data.get("ethics") if isinstance(data.get("ethics"), dict) else {}
+    attached = bool(data.get("attached"))
+    passed = ethics.get("passed")
+    if attached and passed is True:
+        head = "Attached to AZ-OS. The ethics check passed."
+    elif attached:
+        head = "Attached to AZ-OS."
+    else:
+        head = "AZ-OS attach did not complete."
+    count = data.get("job_count")
+    lines = [
+        head,
+        f"Protocol: {data.get('protocol') or '—'}",
+        f"Jobs included: {0 if count is None else count}",
+    ]
+    if data.get("kernel") is False:
+        lines.append("Observation only.")
+    author = data.get("author")
+    if author:
+        lines.append(f"Author: {author}")
+    lines.extend(["", "Next: shadowlock ui   or   shadowlock observe --azos", "JSON: shadowlock attach --json"])
+    return "\n".join(lines) + "\n"
+
+
+def format_import_human(rec: dict[str, Any]) -> str:
+    keys = rec.get("keys") or []
+    shown = ", ".join(str(k) for k in keys) if keys else "(none)"
+    return (
+        f"Read {rec.get('imported')}.\n"
+        f"Keys: {shown}\n"
+        "No copy was saved.\n"
+        "\n"
+        "Next: shadowlock ui\n"
+    )
+
+
+def format_export_human(rec: dict[str, Any]) -> str:
+    return (
+        f"Wrote {rec.get('exported')}.\n"
+        f"Author: {rec.get('author')}\n"
+        "\n"
+        "Next: shadowlock ui\n"
+    )
+
+
+def _wants_json(args: argparse.Namespace) -> bool:
+    return bool(getattr(args, "stdout", False) or getattr(args, "as_json", False))
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _build_parser().parse_args(argv)
+    if argv is None:
+        argv = sys.argv[1:]
+    argv = list(argv)
+    if not argv:
+        sys.stdout.write(WELCOME)
+        return 0
+    if argv[0] in {"-h", "--help", "help"}:
+        sys.stdout.write(HELP)
+        return 0
+    if argv[0] in {"-V", "--version"}:
+        sys.stdout.write(f"shadowlock {__version__}\n")
+        return 0
+
+    try:
+        args = _build_parser().parse_args(argv)
+    except SystemExit as exc:
+        code = exc.code
+        if code is None:
+            return 0
+        return code if isinstance(code, int) else 2
+
+    if getattr(args, "cmd", None) is None:
+        sys.stdout.write(WELCOME)
+        return 0
 
     if args.cmd == "version":
         sys.stdout.write(f"shadowlock {__version__}\n")
@@ -185,7 +411,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.cmd == "ui":
         from shadowlock.ui import serve
 
-        serve(host=args.host, port=args.port)
+        try:
+            serve(host=args.host, port=args.port)
+        except OSError as exc:
+            return _die(str(exc), "shadowlock ui --port 8765")
         return 0
 
     if args.cmd == "observe":
@@ -193,33 +422,28 @@ def main(argv: Sequence[str] | None = None) -> int:
             try:
                 assert_airgap()
             except AirgapError as exc:
-                sys.stderr.write(f"shadowlock: {exc}\n")
-                return 2
-        if not args.out and not args.stdout:
-            sys.stderr.write("shadowlock: pass --out FILE or --stdout\n")
-            return 2
+                return _die(str(exc), "unset the proxy variables, then run the command again")
         if getattr(args, "azos", False):
             return _observe_azos(args)
         if not args.inp:
-            sys.stderr.write("shadowlock: pass --in FILE or --azos\n")
-            return 2
+            return _die(
+                "No job file given.",
+                "shadowlock observe --in jobs.jsonl   or   shadowlock observe --azos",
+            )
         path = Path(args.inp)
         if not path.is_file():
-            sys.stderr.write(f"shadowlock: input not found: {path}\n")
-            return 2
+            return _die(
+                f"Input not found: {path}",
+                "shadowlock observe --in jobs.jsonl",
+            )
         adapter = _adapter_for(path, args.format)
         try:
             with ShadowLockSession(salt=args.salt, airgap=args.airgap) as session:
                 report = session.observe(adapter)
                 payload = report.to_json()
         except (AirgapError, SessionForgottenError) as exc:
-            sys.stderr.write(f"shadowlock: {exc}\n")
-            return 2
-        if args.stdout:
-            sys.stdout.write(payload + "\n")
-        if args.out:
-            out_path = Path(args.out)
-            out_path.write_text(payload + "\n", encoding="utf-8")
+            return _die(str(exc), "shadowlock doctor")
+        _emit_report(args, payload)
         return 0
 
     if args.cmd == "attach":
@@ -238,12 +462,17 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         try:
             rec = import_json(args.path)
+        except FileNotFoundError:
+            return _die(f"File not found: {args.path}", "shadowlock import examples/job.json")
+        except json.JSONDecodeError:
+            return _die("That file is not valid JSON.", "shadowlock import examples/job.json")
         except Exception as exc:  # noqa: BLE001
-            sys.stderr.write(f"shadowlock: {exc}\n")
-            return 2
-        # Do not dump the document: keys and ok only.
+            return _die(str(exc), "shadowlock import examples/job.json")
         shown = {k: rec[k] for k in rec if k != "document"}
-        sys.stdout.write(json.dumps(shown, indent=2, ensure_ascii=False) + "\n")
+        if getattr(args, "as_json", False):
+            sys.stdout.write(json.dumps(shown, indent=2, ensure_ascii=False) + "\n")
+        else:
+            sys.stdout.write(format_import_human(shown))
         return 0
 
     if args.cmd == "export":
@@ -251,13 +480,17 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         try:
             rec = export_json(args.path)
+        except OSError as exc:
+            return _die(str(exc), "shadowlock export report.json")
         except Exception as exc:  # noqa: BLE001
-            sys.stderr.write(f"shadowlock: {exc}\n")
-            return 2
-        sys.stdout.write(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
+            return _die(str(exc), "shadowlock export report.json")
+        if getattr(args, "as_json", False):
+            sys.stdout.write(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
+        else:
+            sys.stdout.write(format_export_human(rec))
         return 0
 
-    return 2
+    return _die(f'Unknown command "{args.cmd}".', "shadowlock --help")
 
 
 def _extra_jobs(path_s: str | None, fmt: str | None) -> list[dict]:
@@ -292,11 +525,16 @@ def _ethics_from_args(args: argparse.Namespace) -> dict:
     return ethics
 
 
-def _write_observe(args: argparse.Namespace, payload: str) -> None:
-    if getattr(args, "stdout", False):
+def _emit_report(args: argparse.Namespace, payload: str) -> None:
+    if _wants_json(args):
         sys.stdout.write(payload + "\n")
     if getattr(args, "out", None):
         Path(args.out).write_text(payload + "\n", encoding="utf-8")
+    if not _wants_json(args):
+        text = format_report_human(json.loads(payload))
+        if getattr(args, "out", None):
+            text += f"Wrote {args.out}\n"
+        sys.stdout.write(text)
 
 
 def _attach_azos(args: argparse.Namespace) -> int:
@@ -312,12 +550,14 @@ def _attach_azos(args: argparse.Namespace) -> int:
         )
         receipt = observer.attach(ethics=_ethics_from_args(args), extra_jobs=extra)
     except FileNotFoundError as exc:
-        sys.stderr.write(f"shadowlock: input not found: {exc}\n")
-        return 2
+        return _die(f"Input not found: {exc}", "shadowlock attach --in jobs.jsonl")
     except (AirgapError, EthicsError, HookError) as exc:
-        sys.stderr.write(f"shadowlock: {exc}\n")
-        return 2
-    sys.stdout.write(json.dumps(receipt.as_dict(), indent=2, ensure_ascii=False) + "\n")
+        return _die(str(exc), "shadowlock doctor")
+    data = receipt.as_dict()
+    if getattr(args, "as_json", False):
+        sys.stdout.write(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    else:
+        sys.stdout.write(format_attach_human(data))
     return 0
 
 
@@ -337,12 +577,10 @@ def _observe_azos(args: argparse.Namespace) -> int:
         report = observer.observe(salt=args.salt)
         payload = report.to_json()
     except FileNotFoundError as exc:
-        sys.stderr.write(f"shadowlock: input not found: {exc}\n")
-        return 2
+        return _die(f"Input not found: {exc}", "shadowlock observe --in jobs.jsonl")
     except (AirgapError, EthicsError, HookError, SessionForgottenError) as exc:
-        sys.stderr.write(f"shadowlock: {exc}\n")
-        return 2
-    _write_observe(args, payload)
+        return _die(str(exc), "shadowlock doctor")
+    _emit_report(args, payload)
     return 0
 
 
