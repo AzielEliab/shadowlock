@@ -23,12 +23,12 @@ It OS-hooks into AZ-OS for process/job observation under ethics policy. **Import
 
 ## Link record
 
-Other Softwares, including 4DMap, read the same local record ShadowLock writes when you link a product.
+ShadowLock writes the link file when you link a product.
 
 | | |
 |---|---|
-| File | `~/.local/share/shadowlock/links.json` |
-| Override | `SHADOWLOCK_LINKS` or `$XDG_DATA_HOME/shadowlock/links.json` |
+| File | `~/.shadowlock/links.json` |
+| Override | `SHADOWLOCK_LINKS` |
 | API | `GET http://127.0.0.1:8764/api/links` |
 | Catalog | `GET http://127.0.0.1:8764/api/software` |
 | Terminal | `shadowlock links` or `shadowlock links --json` |
@@ -36,6 +36,10 @@ Other Softwares, including 4DMap, read the same local record ShadowLock writes w
 Each link stores `slug`, `kind` (`plain`, `gate`, or `lock`), `input_id`, `input_path`, `linked_at`, and `business_label`. The kind follows the suite order: Plain, then Gate, then Lock. Clock is not Lock.
 
 When the file is missing, or `links` is empty, nothing is linked. The page says so. Linking does not copy a job file into this record.
+
+## 4DMap
+
+4DMap is a separate Softwares. It has its own install and its own tile in the suite. It may optionally read `~/.shadowlock/links.json` on its own desk. ShadowLock does not include 4DMap’s map.
 
 > Change is optional. Truth is not.
 

@@ -1,10 +1,10 @@
 """Local Softwares link record.
 
-Other products, including 4DMap, read the same file ShadowLock writes.
+ShadowLock writes this file. 4DMap is a separate Softwares and may
+optionally read it. 4DMap is not part of this install.
 Job payloads are not stored here.
 
-Default path: $XDG_DATA_HOME/shadowlock/links.json
-or ~/.local/share/shadowlock/links.json.
+Default path: ~/.shadowlock/links.json
 Override with SHADOWLOCK_LINKS.
 """
 
@@ -31,9 +31,7 @@ def links_path() -> Path:
     override = os.environ.get("SHADOWLOCK_LINKS")
     if override:
         return Path(override).expanduser()
-    xdg = os.environ.get("XDG_DATA_HOME")
-    base = Path(xdg).expanduser() if xdg else Path.home() / ".local" / "share"
-    return base / "shadowlock" / "links.json"
+    return Path.home() / ".shadowlock" / "links.json"
 
 
 def _now() -> str:
@@ -200,6 +198,7 @@ def format_links_human(view: dict[str, Any]) -> str:
     if not links:
         lines.append("Nothing linked yet.")
         lines.append("Next: shadowlock ui")
+        lines.append("4DMap is a separate Softwares. It may optionally read this file. It has its own install.")
         return "\n".join(lines) + "\n"
     lines.append("")
     for item in links:
@@ -210,5 +209,5 @@ def format_links_human(view: dict[str, Any]) -> str:
         lines.append(f"  Input path: {item.get('input_path')}")
         lines.append(f"  Linked: {item.get('linked_at')}")
         lines.append("")
-    lines.append("4DMap reads this same file.")
+    lines.append("4DMap is a separate Softwares. It may optionally read this file. It has its own install.")
     return "\n".join(lines).rstrip() + "\n"

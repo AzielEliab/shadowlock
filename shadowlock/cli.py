@@ -254,7 +254,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_links = sub.add_parser(
         "links",
         help="Show Softwares linked for review.",
-        description="Show the local link record other Softwares, including 4DMap, can read.",
+        description="Show the link file ShadowLock writes. 4DMap is a separate Softwares and may optionally read it.",
         epilog="examples:\n  shadowlock links\n  shadowlock links --json",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

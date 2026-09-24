@@ -1,4 +1,4 @@
-"""Softwares link record: one path for every bucket, readable by 4DMap."""
+"""Softwares link record: one path for every bucket. 4DMap is a separate Softwares."""
 
 from __future__ import annotations
 
@@ -28,6 +28,11 @@ def test_catalog_buckets_match_suite_sort() -> None:
     assert sum(card["bucket"] == "plain" for card in cards) == 26
     assert sum(card["bucket"] == "gate" for card in cards) == 1
     assert sum(card["bucket"] == "lock" for card in cards) == 15
+
+
+def test_default_link_path_is_home_shadowlock(monkeypatch) -> None:
+    monkeypatch.delenv("SHADOWLOCK_LINKS", raising=False)
+    assert links_path() == Path.home() / ".shadowlock" / "links.json"
 
 
 def test_link_record_fields_and_empty_file(tmp_path: Path, monkeypatch) -> None:
@@ -86,6 +91,11 @@ def test_cli_links_human_and_json(tmp_path: Path, monkeypatch, capsys) -> None:
     assert data["links"][0]["slug"] == "4dmap"
     assert data["links"][0]["kind"] == "plain"
     assert data["path"].endswith("links.json")
+    human = main(["links"])
+    assert human == 0
+    text = capsys.readouterr().out
+    assert "separate Softwares" in text
+    assert "own install" in text
 
 
 def test_ui_link_api_roundtrip(tmp_path: Path, monkeypatch) -> None:

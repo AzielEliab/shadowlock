@@ -208,7 +208,7 @@ PAGE = r"""<!DOCTYPE html>
 
     <details>
       <summary>About</summary>
-      <p>Version __VERSION__. A linked product keeps a local record: slug, kind, input id, input path, linked time, and business label. 4DMap reads that same file. Comparing a job file does not keep the file. Bound to 127.0.0.1. It can attach to AZ-OS on this computer when the ethics check passes.</p>
+      <p>Version __VERSION__. A linked product keeps a local record: slug, kind, input id, input path, linked time, and business label. The file is ~/.shadowlock/links.json. 4DMap is a separate Softwares and may optionally read that file. It has its own install. Comparing a job file does not keep the file. Bound to 127.0.0.1. It can attach to AZ-OS on this computer when the ethics check passes.</p>
       <p>Author: Aziel Eliab.</p>
     </details>
   </main>
