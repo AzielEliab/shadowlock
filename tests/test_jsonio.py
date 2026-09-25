@@ -40,15 +40,26 @@ def test_cli_import_export(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.chdir(tmp_path)
     src = tmp_path / "in.json"
     src.write_text(json.dumps({"observed": {"id": "WO-0001"}, "ok": True}), encoding="utf-8")
-    assert main(["import", str(src)]) == 0
+    assert main(["import", str(src), "--json"]) == 0
     out = capsys.readouterr().out
     data = json.loads(out)
     assert data["ok"] is True
     assert "document" not in data
     dest = tmp_path / "report.json"
-    assert main(["export", str(dest)]) == 0
+    assert main(["export", str(dest), "--json"]) == 0
     rec = json.loads(capsys.readouterr().out)
     assert rec["author"] == "Aziel Eliab"
     doc = json.loads(dest.read_text(encoding="utf-8"))
     assert doc["author"] == "Aziel Eliab"
     assert not (tmp_path / ".shadowlock-state.json").exists()
+
+
+def test_cli_import_human_default(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.chdir(tmp_path)
+    src = tmp_path / "in.json"
+    src.write_text(json.dumps({"observed": {"id": "WO-0001"}, "ok": True}), encoding="utf-8")
+    assert main(["import", str(src)]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("Read ")
+    assert "No copy was saved." in out
+    assert "WO-0001" not in out

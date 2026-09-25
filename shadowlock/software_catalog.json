@@ -1,0 +1,259 @@
+{
+  "author": "Aziel Eliab",
+  "count": 42,
+  "sort_law": "plain A–Z → gate A–Z → lock A–Z (Clock ≠ Lock)",
+  "software": [
+    {
+      "name": "4DMap",
+      "slug": "4dmap",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZ-CLCE",
+      "slug": "azclce",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZ-OS",
+      "slug": "azos",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZAI",
+      "slug": "azai",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZBot",
+      "slug": "azbot",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZBrowser",
+      "slug": "azbrowser",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZChat",
+      "slug": "azchat",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZCoherence",
+      "slug": "azcoherence",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZHub",
+      "slug": "azhub",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "Aziel Digital Library",
+      "slug": "aziel-corpus",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AzielTether",
+      "slug": "azieltether",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZInterface",
+      "slug": "azinterface",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZMail",
+      "slug": "azmail",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZNet",
+      "slug": "aznet",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "AZVPN",
+      "slug": "azvpn",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "ForgeReceipts",
+      "slug": "forgereceipts",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "Glossa Filter",
+      "slug": "glossafilter",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "MirageGrid",
+      "slug": "miragegrid",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "MMConsensus",
+      "slug": "mmconsensus",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "Post-King Chess",
+      "slug": "postking",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "StaticClock",
+      "slug": "staticclock",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "The ARK",
+      "slug": "ark",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "ToolBench",
+      "slug": "toolbench",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "Whitestone",
+      "slug": "whitestone",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "ZionPattern Solver",
+      "slug": "zsolver",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "ZKAttest",
+      "slug": "zkattest",
+      "bucket": "plain",
+      "kind": "plain"
+    },
+    {
+      "name": "DecisionGATE",
+      "slug": "decisiongate",
+      "bucket": "gate",
+      "kind": "gate"
+    },
+    {
+      "name": "ChronoLock",
+      "slug": "chronolock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "CodeLock",
+      "slug": "codelock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "EmbryoLock",
+      "slug": "embryolock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "EmployeeLock",
+      "slug": "employeelock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "FoldLock",
+      "slug": "foldlock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "GodLock",
+      "slug": "godlock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "M.I.A.Lock",
+      "slug": "mialock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "PeaceLock",
+      "slug": "peacelock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "ShadowLock",
+      "slug": "shadowlock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "SpectralLock",
+      "slug": "spectrallock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "TemporalLock",
+      "slug": "temporallock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "TrajectoryLock",
+      "slug": "trajectorylock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "VeilLock",
+      "slug": "veillock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "VibeLock",
+      "slug": "vibelock",
+      "bucket": "lock",
+      "kind": "lock"
+    },
+    {
+      "name": "WhistleLock",
+      "slug": "whistlelock",
+      "bucket": "lock",
+      "kind": "lock"
+    }
+  ]
+}

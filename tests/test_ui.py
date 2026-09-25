@@ -61,6 +61,16 @@ def test_page_has_file_import_and_export() -> None:
     assert "Simple" in PAGE
     assert "Advanced" in PAGE
     assert "No OS hook" not in PAGE
+    assert "prefers-color-scheme" in PAGE
+    assert ":focus-visible" in PAGE
+    assert "#c9a227" in PAGE
+    assert "<details" in PAGE
+    assert "Drop a Softwares tile here" in PAGE
+    assert "Nothing linked yet." in PAGE
+    assert ">Plain</button>" in PAGE
+    assert ">Gate</button>" in PAGE
+    assert ">Lock</button>" in PAGE
+    assert 'id="link-selected"' in PAGE
 
 
 def test_ui_observe_drops_names() -> None:

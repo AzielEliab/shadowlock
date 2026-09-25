@@ -28,178 +28,216 @@ PAGE = r"""<!DOCTYPE html>
 <title>ShadowLock</title>
 <style>
   :root {
-    --bg: #0f1419; --panel: #171e27; --ink: #e8edf2; --muted: #8b97a6;
-    --line: #2a3544; --gold: #d4bc6a; --focus: #7aa2d4; --bad: #d4534b;
-    --ok: #7dcea0;
+    color-scheme: light dark;
+    --bg: #f7f4ec; --panel: #fffdf8; --ink: #1c1914; --muted: #4e483f;
+    --line: #ddd4c2; --gold: #c9a227; --focus: #c9a227; --bad: #8f2d2d;
+    --ok: #1d6b42; --field: #fffdf8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12110e; --panel: #1c1b17; --ink: #f4efe4; --muted: #c8bba6;
+      --line: #3d382e; --gold: #c9a227; --focus: #c9a227; --bad: #f0a8a2;
+      --ok: #9ddebe; --field: #14130f;
+    }
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0; background: var(--bg); color: var(--ink);
-    font-family: system-ui, "Segoe UI", sans-serif; line-height: 1.45;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5;
   }
-  body { max-width: 46rem; margin: 0 auto; padding: 2.1rem 1.2rem 4rem; }
-  .tag {
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  body { max-width: 40rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+  .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.75rem;
   }
-  h1 { font-size: 2rem; font-weight: 650; letter-spacing: 0.04em; margin: 0.35rem 0 0.25rem; }
-  .motto { color: var(--gold); font-style: italic; margin: 0 0 0.85rem; font-size: 1.05rem; }
-  .lede { color: var(--muted); margin: 0 0 1.1rem; max-width: 40rem; }
-  .limit { color: var(--gold); margin: 0 0 1.4rem; font-size: 0.95rem; }
-  fieldset {
-    border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
-    padding: 1.1rem 1.15rem 1.2rem; margin: 0 0 1rem;
-  }
-  legend {
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0 0.4rem;
-  }
-  label { display: block; font-size: 0.92rem; margin: 0.85rem 0 0.3rem; }
-  label .kicker {
-    display: block; font-family: ui-monospace, Menlo, Consolas, monospace;
-    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 0.12rem;
-  }
-  textarea, input[type=file] {
-    width: 100%; padding: 0.55rem 0.65rem; border: 1px solid var(--line);
-    border-radius: 6px; background: #10161d; color: var(--ink);
+  .brand { font-weight: 650; letter-spacing: 0.01em; }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  h1 { font-size: 1.85rem; font-weight: 650; margin: 0 0 0.45rem; line-height: 1.2; }
+  .lede { margin: 0 0 1.25rem; max-width: 36rem; font-size: 1.05rem; }
+  .hint { color: var(--muted); margin: 0.85rem 0 1.4rem; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.92em; }
+  label { display: block; font-size: 0.95rem; margin: 0.9rem 0 0.35rem; }
+  textarea {
+    width: 100%; max-width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--field); color: var(--ink);
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.88rem;
   }
-  textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
-  .actions { display: flex; gap: 0.65rem; flex-wrap: wrap; margin: 0.4rem 0 1.2rem; }
+  button, summary {
+    font: inherit;
+  }
   button {
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem;
-    letter-spacing: 0.04em; padding: 0.65rem 1rem; border-radius: 8px;
-    border: 1px solid var(--ink); background: var(--ink); color: var(--bg);
-    cursor: pointer; font-weight: 650;
+    padding: 0.7rem 1.05rem; border-radius: 8px; border: 1px solid var(--ink);
+    background: var(--ink); color: var(--bg); cursor: pointer; font-weight: 650;
   }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-  button.ghost { background: transparent; color: var(--ink); }
-  .addfile {
-    display: flex; align-items: center; justify-content: center; text-align: center;
-    width: 100%; min-height: 7.2rem; font-size: 1.55rem; font-weight: 700;
-    letter-spacing: 0.02em; border: 2px dashed var(--gold); background: #1a160c;
-    color: var(--ink); border-radius: 14px; cursor: pointer; margin: 0.2rem 0 0.7rem;
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.primary { min-height: 2.75rem; }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
+  button:focus-visible, summary:focus-visible, textarea:focus-visible, a:focus-visible, input:focus-visible, .tile:focus-visible {
+    outline: 3px solid var(--focus); outline-offset: 2px;
   }
-  .addfile:hover { filter: brightness(1.08); }
-  .views { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin: 0 0 1rem; }
-  .views button { border: 0; border-radius: 0; padding: 0.35rem 0.9rem; background: transparent; color: var(--muted); }
-  .views button.on { background: var(--gold); color: #14110a; font-weight: 650; }
-  h2 {
-    font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); font-weight: 600; margin: 1.2rem 0 0.7rem;
+  .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1rem 0 0.4rem; }
+  details {
+    border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+    padding: 0.75rem 1rem; margin: 0 0 0.8rem;
   }
+  summary { cursor: pointer; font-weight: 650; }
+  h2 { font-size: 1.15rem; font-weight: 650; margin: 0 0 0.7rem; }
   .card {
     border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
-    padding: 0.85rem 1rem;
+    padding: 1rem 1.05rem;
   }
-  dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.3rem 1rem; margin: 0; }
+  dl { display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 1rem; margin: 0; }
   dt { color: var(--muted); }
+  dd { margin: 0; }
   pre {
     font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.8rem;
-    white-space: pre-wrap; word-break: break-word; margin: 0;
+    white-space: pre-wrap; overflow-wrap: anywhere; margin: 0.6rem 0 0;
   }
-  .plain { font-size: 1.15rem; margin: 0 0 0.7rem; }
-  .err { color: var(--bad); }
+  .plain { font-size: 1.05rem; margin: 0 0 0.8rem; }
+  .err { color: var(--bad); margin: 0.6rem 0 0; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-  .hidden { display: none; }
-  footer { margin-top: 2rem; color: var(--muted); font-size: 0.88rem; }
-  .foot-note { font-style: italic; }
+  footer { margin-top: 1.6rem; color: var(--muted); font-size: 0.9rem; }
+  .drop {
+    position: sticky; top: 0.6rem; z-index: 2;
+    border: 2px dashed var(--line); border-radius: 14px; background: var(--panel);
+    padding: 1.15rem 1rem; margin: 0 0 0.85rem; min-height: 6.5rem;
+  }
+  .drop strong { display: block; font-size: 1.05rem; margin-bottom: 0.25rem; }
+  .drop p { margin: 0; color: var(--muted); }
+  .drop.over { border-color: var(--gold); }
+  .drop[data-bucket="plain"] { border-style: dashed; }
+  .drop[data-bucket="gate"] { border-style: double; border-width: 4px; }
+  .drop[data-bucket="lock"] { border-style: solid; box-shadow: inset 4px 0 0 var(--gold); }
+  .buckets { display: flex; gap: 0.45rem; flex-wrap: wrap; margin: 0.4rem 0 0.7rem; }
+  .buckets button { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
+  .buckets button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .tiles { display: grid; gap: 0.45rem; margin: 0 0 0.9rem; }
+  .tile {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+    width: 100%; text-align: left; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 10px; padding: 0.65rem 0.75rem;
+    font-weight: 550;
+  }
+  .tile[data-bucket="plain"] { border-style: dashed; }
+  .tile[data-bucket="gate"] { border-style: double; border-width: 3px; }
+  .tile[data-bucket="lock"] { border-style: solid; box-shadow: inset 4px 0 0 var(--gold); }
+  .tile[aria-selected="true"] { border-color: var(--gold); }
+  .tile .kind { color: var(--muted); font-size: 0.85rem; font-weight: 550; }
+  .fields { display: grid; gap: 0.55rem; margin: 0.2rem 0 0.8rem; }
+  .fields input {
+    width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--field); color: var(--ink); font: inherit;
+  }
+  .links { display: grid; gap: 0.55rem; margin: 0.3rem 0 1rem; }
+  .link-row { display: flex; justify-content: space-between; gap: 0.75rem; align-items: flex-start; }
+  .link-row button { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 550; }
+  .empty { color: var(--muted); margin: 0.2rem 0 1rem; }
+  #status { min-height: 1.3rem; margin: 0.35rem 0 0.6rem; }
+  @media (max-width: 480px) {
+    body { padding: 1.1rem 0.9rem 2.4rem; }
+    h1 { font-size: 1.55rem; }
+    button, .actions button, .tile, .link-row button { width: 100%; }
+    .link-row, .tile { align-items: stretch; flex-direction: column; }
+    .actions { flex-direction: column; }
+    dl { grid-template-columns: 1fr; gap: 0.1rem; }
+    dd { margin-bottom: 0.65rem; }
+  }
 </style>
 </head>
 <body>
-  <header>
-    <div class="tag">ShadowLock · __VERSION__ · Aziel Eliab · loopback · zero-retention</div>
-    <h1>ShadowLock</h1>
-    <p class="motto">Change is optional. Truth is not.</p>
-    <p class="lede">
-      Import a job file you already have, or attach via AZ-OS.
-      The page compares it to a guess, shows money made / lost / left on
-      the table, and forgets the file. Bound to 127.0.0.1 only. Nothing
-      is written to disk.
-    </p>
-    <p class="limit">OS-hooks into AZ-OS for process/job observation under ethics policy. This is a comparison, not a dispatcher, optimizer, scheduler, or truth score.</p>
+  <header class="top">
+    <span class="brand">ShadowLock</span>
+    <span class="meta">Aziel Eliab</span>
   </header>
+  <main>
+    <h1>Link a product</h1>
+    <p class="lede">Drag a Softwares tile here to hold that product’s inputs for business review.</p>
+    <div id="drop-zone" class="drop" tabindex="0" role="region" aria-label="Drop a Softwares tile">
+      <strong id="drop-title">Drop a Softwares tile here</strong>
+      <p id="drop-hint">Or choose a product and press Link. Plain, Gate, and Lock use the same step.</p>
+    </div>
+    <p id="status" aria-live="polite"></p>
+    <div class="fields">
+      <label for="business-label">Business label <span class="kind">(optional)</span></label>
+      <input id="business-label" type="text" autocomplete="off" placeholder="Name this link for your business">
+      <label for="input-handle">Input id or path <span class="kind">(optional)</span></label>
+      <input id="input-handle" type="text" autocomplete="off" placeholder="Leave blank to use the product’s inputs handle">
+    </div>
+    <button class="primary" id="link-selected" type="button">Link</button>
+    <p class="hint">Optional check in a terminal: <code>shadowlock doctor</code></p>
+    <h2>Linked inputs</h2>
+    <p id="links-empty" class="empty">Nothing linked yet.</p>
+    <div id="links" class="links"></div>
+    <p id="link-path" class="hint"></p>
+    <div class="buckets" role="group" aria-label="Softwares bucket">
+      <button type="button" id="bucket-plain" aria-pressed="true">Plain</button>
+      <button type="button" id="bucket-gate" aria-pressed="false">Gate</button>
+      <button type="button" id="bucket-lock" aria-pressed="false">Lock</button>
+    </div>
+    <div id="tiles" class="tiles" role="listbox" aria-label="Softwares"></div>
+    <p class="err" id="err" hidden></p>
 
-  <form id="mirror-form" autocomplete="off">
-    <fieldset>
-      <legend>Import</legend>
-      <p class="lede" style="margin-bottom:0.4rem">Tap the big button to pick a JSON file. Paste is optional.</p>
-      <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
-      <button class="addfile" id="import-btn" type="button">Import JSON file</button>
-      <label for="observed">
-        <span class="kicker">Observed outcome (or paste)</span>
-        JSON object: task_class, urgency, actual_duration, actual_cost, actual_revenue, actual_outcome.
-      </label>
-      <textarea id="observed" rows="8" placeholder='{"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"}'></textarea>
-      <label for="counterfactual">
-        <span class="kicker">Counterfactual</span>
-        JSON prior for the class: duration / cost / revenue as [low, high] or a midpoint.
-      </label>
-      <textarea id="counterfactual" rows="6" placeholder='{"duration":[25,45],"cost":[70,110],"revenue":[180,260]}'></textarea>
-    </fieldset>
-    <div class="actions">
-      <button type="submit" id="run">Show report</button>
-      <button type="button" class="ghost" id="attach">Attach via AZ-OS</button>
-      <button type="button" class="ghost" id="sample">Load sample</button>
-      <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
-    </div>
-  </form>
+    <section id="result" hidden>
+      <h2>Simple summary</h2>
+      <div class="card">
+        <p class="plain" id="plain"></p>
+        <dl id="summary"></dl>
+      </div>
+    </section>
 
-  <section id="result" hidden>
-    <h2>View</h2>
-    <div class="views" role="group" aria-label="Simple or advanced">
-      <button type="button" id="view-simple" class="on">Simple</button>
-      <button type="button" id="view-advanced">Advanced</button>
-    </div>
-    <div class="card">
-      <p class="plain" id="plain"></p>
-      <dl id="summary"></dl>
-    </div>
-    <div id="advanced" class="hidden">
-      <h2>JSON</h2>
-      <div class="card"><pre id="json"></pre></div>
-    </div>
-  </section>
-  <p class="err" id="err" hidden></p>
+    <details id="advanced-panel">
+      <summary>Advanced</summary>
+      <form id="mirror-form" autocomplete="off">
+        <input id="import-json" class="sr-only" type="file" accept="application/json,.json">
+        <button class="ghost" id="import-btn" type="button">Import JSON file</button>
+        <label for="observed">Job JSON</label>
+        <textarea id="observed" rows="7" placeholder='{"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"}'></textarea>
+        <label for="counterfactual">Guess (duration, cost, revenue)</label>
+        <textarea id="counterfactual" rows="5" placeholder='{"duration":[25,45],"cost":[70,110],"revenue":[180,260]}'></textarea>
+        <div class="actions">
+          <button type="submit" id="run">Show report</button>
+          <button type="button" class="ghost" id="attach">Attach via AZ-OS</button>
+          <button type="button" class="ghost" id="sample">Load sample</button>
+          <button type="button" class="ghost" id="export" disabled>Export JSON report</button>
+        </div>
+        <h2>JSON</h2>
+        <pre id="json"></pre>
+      </form>
+    </details>
 
+    <details>
+      <summary>About</summary>
+      <p>Version __VERSION__. A linked product keeps a local record: slug, kind, input id, input path, linked time, and business label. The file is ~/.shadowlock/links.json. 4DMap is a separate Softwares and may optionally read that file. It has its own install. Comparing a job file does not keep the file. Bound to 127.0.0.1. It can attach to AZ-OS on this computer when the ethics check passes.</p>
+      <p>Author: Aziel Eliab.</p>
+    </details>
+  </main>
   <footer>
-    <p>Apache-2.0 · Aziel Eliab · July 2026 · Bound to 127.0.0.1 · <code>shadowlock ui</code></p>
-    <p class="foot-note">Zero-retention: uploads stay in this process and are not written to disk. AZ-OS hook is ethics-gated observation, not process control.</p>
+    <p>Aziel Eliab · 127.0.0.1 · <code>shadowlock ui</code></p>
   </footer>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
   let last = null;
-  let view = "simple";
   const SAMPLE_OBS = {"id":"WO-0001","task_class":"repair","urgency":0.5,"actual_duration":40,"actual_cost":90,"actual_revenue":220,"actual_outcome":"complete"};
   const SAMPLE_CF = {"duration":[25,45],"cost":[70,110],"revenue":[180,260]};
   function fail(msg) { $("err").hidden = false; $("err").textContent = msg; }
-  function setView(name) {
-    view = name;
-    $("view-simple").classList.toggle("on", name === "simple");
-    $("view-advanced").classList.toggle("on", name === "advanced");
-    $("advanced").classList.toggle("hidden", name !== "advanced");
-  }
-  $("view-simple").addEventListener("click", () => setView("simple"));
-  $("view-advanced").addEventListener("click", () => setView("advanced"));
   function render(data) {
     last = data;
     $("result").hidden = false;
     const r = data.report || {};
     const L = r.ledger || {};
-    $("plain").textContent = "Compared this job to a guess. Names are dropped. Nothing is saved.";
+    $("plain").textContent = "Compared this job to a guess. Names are left out. Nothing is saved.";
     $("summary").innerHTML =
-      "<dt>jobs looked at</dt><dd>" + (r.observed ?? "—") + "</dd>" +
-      "<dt>jobs sampled</dt><dd>" + (r.sampled ?? "—") + "</dd>" +
-      "<dt>money made</dt><dd>" + (L.money_made ?? "—") + "</dd>" +
-      "<dt>money lost</dt><dd>" + (L.money_lost ?? "—") + "</dd>" +
-      "<dt>left on the table</dt><dd>" + (L.money_left_on_table ?? "—") + "</dd>" +
-      "<dt>net gap</dt><dd>" + (L.net_variance ?? "—") + "</dd>";
+      "<dt>Jobs looked at</dt><dd>" + (r.observed ?? "—") + "</dd>" +
+      "<dt>Jobs sampled</dt><dd>" + (r.sampled ?? "—") + "</dd>" +
+      "<dt>Money made</dt><dd>" + (L.money_made ?? "—") + "</dd>" +
+      "<dt>Money lost</dt><dd>" + (L.money_lost ?? "—") + "</dd>" +
+      "<dt>Left on the table</dt><dd>" + (L.money_left_on_table ?? "—") + "</dd>" +
+      "<dt>Net gap</dt><dd>" + (L.net_variance ?? "—") + "</dd>";
     $("json").textContent = JSON.stringify(data, null, 2);
     $("export").disabled = false;
-    setView(view);
+    if ($("result").scrollIntoView) $("result").scrollIntoView({block: "nearest"});
   }
   async function runMirror(observed, counterfactual) {
     $("err").hidden = true;
@@ -222,7 +260,7 @@ PAGE = r"""<!DOCTYPE html>
     try {
       observed = JSON.parse($("observed").value || "{}");
       counterfactual = JSON.parse($("counterfactual").value || "{}");
-    } catch (e) { fail("That JSON is not valid."); return; }
+    } catch (e) { fail("That JSON is not valid. Check the braces, then try Show report again."); return; }
     await runMirror(observed, counterfactual);
   });
   $("import-btn").addEventListener("click", () => $("import-json").click());
@@ -232,7 +270,7 @@ PAGE = r"""<!DOCTYPE html>
     const reader = new FileReader();
     reader.onload = () => {
       let obj;
-      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("That file is not valid JSON."); return; }
+      try { obj = JSON.parse(String(reader.result || "{}")); } catch (e) { fail("That file is not valid JSON. Pick another JSON file."); return; }
       const observed = obj.observed || obj.payload && obj.payload.observed || obj;
       const counterfactual = obj.counterfactual || (obj.payload && obj.payload.counterfactual) || {};
       $("observed").value = JSON.stringify(observed, null, 2);
@@ -263,13 +301,15 @@ PAGE = r"""<!DOCTYPE html>
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+      if (!res.ok || (data.error && !data.report)) {
+        throw new Error((data.error || ("HTTP " + res.status)) + " Next: shadowlock doctor");
+      }
       if (data.report) render(data);
       else {
         $("result").hidden = false;
         $("plain").textContent = data.attached
-          ? "Attached via AZ-OS. Ethics passed. No jobs sampled yet."
-          : "AZ-OS attach did not complete.";
+          ? "Attached to AZ-OS. The ethics check passed. No jobs sampled yet."
+          : "AZ-OS attach did not complete. Open Advanced and try again, or run shadowlock doctor.";
         $("summary").innerHTML =
           "<dt>attached</dt><dd>" + (data.attached ? "yes" : "no") + "</dd>" +
           "<dt>protocol</dt><dd>" + (data.protocol || "—") + "</dd>" +
@@ -297,9 +337,240 @@ PAGE = r"""<!DOCTYPE html>
   });
 })();
 </script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const zone = $("drop-zone");
+  let cards = [];
+  let bucket = "plain";
+  let selected = "";
+  let dragging = null;
+  const dropCopy = {
+    plain: ["Plain", "Drop to link this Plain product’s inputs."],
+    gate: ["Gate", "Drop to link this Gate product’s inputs."],
+    lock: ["Lock", "Drop to link this Lock product’s inputs."],
+  };
+  function fail(msg) {
+    $("err").hidden = false;
+    $("err").textContent = msg;
+  }
+  function say(msg) { $("status").textContent = msg; }
+  function payload() {
+    return {
+      slug: selected,
+      business_label: $("business-label").value,
+      input: $("input-handle").value,
+    };
+  }
+  async function refreshLinks() {
+    const res = await fetch("/api/links");
+    const data = await res.json();
+    const links = data.links || [];
+    $("links").textContent = "";
+    $("links-empty").hidden = links.length > 0;
+    if (data.path) $("link-path").textContent = "Link file: " + data.path;
+    for (const row of links) {
+      const card = document.createElement("article");
+      card.className = "card link-row";
+      card.dataset.bucket = row.kind || row.bucket || "";
+      const text = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = (row.business_label || row.name || row.slug) + " · " + (row.kind || "");
+      const detail = document.createElement("p");
+      detail.className = "hint";
+      detail.textContent = "Input " + (row.input_id || "—") + " · " + (row.input_path || "—");
+      text.append(title, detail);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "ghost";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", async () => {
+        const gone = await fetch("/api/links", {
+          method: "DELETE",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({slug: row.slug, input_id: row.input_id}),
+        });
+        const body = await gone.json();
+        if (!gone.ok) { fail(body.error || "Could not remove that link."); return; }
+        say("Removed " + (row.business_label || row.slug) + ".");
+        refreshLinks();
+      });
+      card.append(text, remove);
+      $("links").append(card);
+    }
+  }
+  function renderTiles() {
+    const box = $("tiles");
+    box.textContent = "";
+    const shown = cards.filter((card) => card.bucket === bucket);
+    for (const card of shown) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.tabIndex = 0;
+      tile.draggable = true;
+      tile.dataset.slug = card.slug;
+      tile.dataset.bucket = card.bucket;
+      tile.setAttribute("role", "option");
+      tile.setAttribute("aria-selected", card.slug === selected ? "true" : "false");
+      const name = document.createElement("span");
+      name.textContent = card.name;
+      const kind = document.createElement("span");
+      kind.className = "kind";
+      kind.textContent = card.bucket === "plain" ? "Plain" : card.bucket === "gate" ? "Gate" : "Lock";
+      tile.append(name, kind);
+      tile.addEventListener("click", () => {
+        selected = card.slug;
+        renderTiles();
+        say(card.name + " selected. Press Link, or drag it onto the target.");
+      });
+      tile.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          selected = card.slug;
+          linkSelected();
+        }
+      });
+      tile.addEventListener("dragstart", (ev) => {
+        dragging = card;
+        selected = card.slug;
+        zone.dataset.slug = card.slug;
+        ev.dataTransfer.setData("application/x-shadowlock-software", card.slug);
+        ev.dataTransfer.setData("text/plain", card.slug);
+        ev.dataTransfer.effectAllowed = "copy";
+        zone.dataset.bucket = card.bucket;
+        zone.classList.add("over");
+        const copy = dropCopy[card.bucket];
+        $("drop-title").textContent = copy[0];
+        $("drop-hint").textContent = copy[1];
+      });
+      tile.addEventListener("dragend", () => {
+        zone.classList.remove("over");
+        window.setTimeout(() => {
+          dragging = null;
+          delete zone.dataset.bucket;
+          $("drop-title").textContent = "Drop a Softwares tile here";
+          $("drop-hint").textContent = "Or choose a product and press Link. Plain, Gate, and Lock use the same step.";
+        }, 50);
+      });
+      box.append(tile);
+    }
+  }
+  async function linkSlug(slug) {
+    $("err").hidden = true;
+    selected = slug;
+    const res = await fetch("/api/links", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload()),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      fail((data.error || "Could not link that product.") + " Choose a Softwares tile, then press Link.");
+      return;
+    }
+    const row = data.link || {};
+    say("Linked " + (row.business_label || row.name || slug) + ". Its inputs are held for review.");
+    $("business-label").value = "";
+    $("input-handle").value = "";
+    renderTiles();
+    await refreshLinks();
+  }
+  function linkSelected() {
+    if (!selected) {
+      fail("Choose a Softwares product, then press Link.");
+      return;
+    }
+    linkSlug(selected);
+  }
+  $("link-selected").addEventListener("click", linkSelected);
+  for (const name of ["plain", "gate", "lock"]) {
+    $("bucket-" + name).addEventListener("click", () => {
+      bucket = name;
+      for (const other of ["plain", "gate", "lock"]) {
+        $("bucket-" + other).setAttribute("aria-pressed", other === name ? "true" : "false");
+      }
+      renderTiles();
+    });
+  }
+  zone.addEventListener("dragover", (ev) => {
+    ev.preventDefault();
+    zone.classList.add("over");
+    if (dragging) zone.dataset.bucket = dragging.bucket;
+  });
+  zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+  zone.addEventListener("drop", async (ev) => {
+    ev.preventDefault();
+    zone.classList.remove("over");
+    const slug = (dragging && dragging.slug) || zone.dataset.slug || ev.dataTransfer.getData("application/x-shadowlock-software") || ev.dataTransfer.getData("text/plain");
+    const file = ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (file && !slug) {
+      fail("Choose the Softwares product this file belongs to, then drop the file again.");
+      return;
+    }
+    if (file) {
+      $("input-handle").value = file.name;
+    }
+    if (!slug) {
+      fail("Drop a Softwares tile, or choose one and press Link.");
+      return;
+    }
+    await linkSlug(slug.trim());
+  });
+  zone.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") linkSelected();
+  });
+  fetch("/api/software").then((res) => res.json()).then((data) => {
+    cards = data.software || [];
+    renderTiles();
+  }).catch(() => fail("The Softwares list did not load. Reload this page."));
+  refreshLinks().catch(() => fail("Linked inputs did not load. Reload this page."));
+})();
+</script>
 </body>
 </html>
 """.replace("__VERSION__", __version__)
+
+
+def _software_payload() -> dict[str, Any]:
+    from shadowlock.catalog import load_catalog, software_cards
+
+    cards = software_cards()
+    catalog = load_catalog()
+    return {
+        "ok": True,
+        "author": "Aziel Eliab",
+        "product": "ShadowLock",
+        "count": len(cards),
+        "sort_law": catalog.get("sort_law"),
+        "software": cards,
+    }
+
+
+def _post_link_from(body: dict[str, Any]) -> dict[str, Any]:
+    from shadowlock.links import link_software, public_view
+
+    row = link_software(
+        str(body.get("slug") or ""),
+        input_id=body.get("input_id"),
+        input_path=body.get("input_path"),
+        business_label=body.get("business_label"),
+        shared_input=body.get("input"),
+    )
+    view = public_view()
+    view["link"] = row
+    return view
+
+
+def _health_payload() -> dict[str, Any]:
+    return {
+        "ok": True,
+        "bind_host": DEFAULT_HOST,
+        "name": "ShadowLock",
+        "author": "Aziel Eliab",
+        "azos_hook": True,
+        "ethics": "Integrity precedes execution.",
+        "version": __version__,
+    }
 
 
 def _as_range(value: Any) -> Any:
@@ -440,21 +711,22 @@ class Handler(BaseHTTPRequestHandler):
             return
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
+            accept = self.headers.get("Accept") or ""
+            if "application/json" in accept and "text/html" not in accept:
+                self._json(200, _health_payload())
+                return
             self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
             return
         if path == "/health":
-            self._json(
-                200,
-                {
-                    "ok": True,
-                    "bind_host": DEFAULT_HOST,
-                    "name": "ShadowLock",
-                    "author": "Aziel Eliab",
-                    "azos_hook": True,
-                    "ethics": "Integrity precedes execution.",
-                    "version": __version__,
-                },
-            )
+            self._json(200, _health_payload())
+            return
+        if path == "/api/software":
+            self._json(200, _software_payload())
+            return
+        if path == "/api/links":
+            from shadowlock.links import public_view
+
+            self._json(200, public_view())
             return
         self._json(404, {"error": "not found"})
 
@@ -484,7 +756,34 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as exc:  # noqa: BLE001
                 self._json(400, {"error": str(exc)})
             return
+        if path == "/api/links":
+            try:
+                self._json(200, _post_link_from(self._read_json()))
+            except ValueError as exc:
+                self._json(400, {"error": str(exc)})
+            except Exception as exc:  # noqa: BLE001
+                self._json(400, {"error": str(exc)})
+            return
         self._json(404, {"error": "not found"})
+
+    def do_DELETE(self) -> None:  # noqa: N802
+        if not self._loopback_ok():
+            self._json(403, {"error": "loopback only"})
+            return
+        path = urlparse(self.path).path
+        if path != "/api/links":
+            self._json(404, {"error": "not found"})
+            return
+        from shadowlock.links import public_view, unlink_software
+
+        try:
+            body = self._read_json()
+            unlink_software(str(body.get("slug") or ""), body.get("input_id"))
+            self._json(200, public_view())
+        except ValueError as exc:
+            self._json(400, {"error": str(exc)})
+        except Exception as exc:  # noqa: BLE001
+            self._json(400, {"error": str(exc)})
 
 
 def make_server(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
@@ -493,10 +792,13 @@ def make_server(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> Threading
     return ThreadingHTTPServer((host, port), Handler)
 
 
+def open_line(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> str:
+    return f"Open http://{host}:{port}/\n"
+
+
 def serve(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
     httpd = make_server(host, port)
-    sys.stdout.write(f"ShadowLock UI  http://{host}:{port}/\n")
-    sys.stdout.write("Local only. Zero-retention: payloads are not written to disk.\n")
+    sys.stdout.write(open_line(host, port))
     sys.stdout.flush()
     try:
         httpd.serve_forever()

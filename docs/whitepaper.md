@@ -74,12 +74,14 @@ host, no webhook, no "suggested assignment" channel.
 
 ### 2.2 Zero retention
 
-All computation is in memory. There is no sqlite, no job log on disk,
-no `.shadowlock` directory of operations. A `ShadowLockSession` holds
-sampled envelopes until `.forget()` or context-manager exit; then they
-are gone. The CLI may print a report to stdout or write a
-**summary-only** file the user asked for (aggregates and truncated
-hashes; no raw ids, no names). Across runs, nothing remains.
+Job comparison stays in memory. There is no sqlite and no job log on
+disk. A `ShadowLockSession` holds sampled envelopes until `.forget()`
+or context-manager exit; then they are gone. The CLI may print a
+report to stdout or write a **summary-only** file the user asked for
+(aggregates and truncated hashes; no raw ids, no names). Linking a
+Softwares product writes `~/.shadowlock/links.json` with slug, input
+id, input path, time, and business label. That file does not store job
+payloads. 4DMap is a separate Softwares and may optionally read it.
 
 ### 2.3 Software-agnostic
 
@@ -316,12 +318,14 @@ ShadowLock is a local, stdlib-only library. The threat model is
 attacker.
 
 - **In-memory.** Envelopes live on the session object. `forget()` and
-  context-manager exit drop them. No sqlite, no `~/.shadowlock`, no
-  rotating log.
+  context-manager exit drop them. No sqlite and no rotating log of
+  jobs. The link record at `~/.shadowlock/links.json` stores product
+  links only.
 - **No outbound network.** The library does not import `requests`,
   `httpx`, or any HTTP client. There is no telemetry.
-- **No persistence of operations.** The only disk write the CLI will
-  perform is an operator-requested summary report.
+- **No persistence of operations.** Disk writes are an operator-requested
+  summary report and the Softwares link record. Job payloads are not
+  written there.
 - **Optional air-gap flag.** `--airgap` (and `ShadowLockSession(airgap=True)`)
   refuses to run if `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `FTP_PROXY`,
   or their lowercase forms are set.

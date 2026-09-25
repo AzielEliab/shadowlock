@@ -184,8 +184,10 @@ def format_human(results: list[dict], *, ok: bool, version: str) -> str:
             "It OS-hooks into AZ-OS under ethics policy. "
             "It does not run them, save people, or talk to the internet."
         )
+        lines.append("Next: shadowlock ui")
     else:
         lines.append("Something is wrong. ShadowLock is not ready.")
+        lines.append("Next: shadowlock doctor --verify")
     return "\n".join(lines)
 
 

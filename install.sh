@@ -27,7 +27,7 @@ python -m pip install -e .
 
 echo
 echo "Installed ShadowLock."
-echo "Run:  shadowlock ui"
-echo "Or:   shadowlock attach   # OS-hook into AZ-OS (127.0.0.1:8800)"
-echo "Then open http://127.0.0.1:8764  (loopback only)"
+echo "1. source .venv/bin/activate"
+echo "2. shadowlock ui"
+echo "3. Open http://127.0.0.1:8764 and tap Import JSON file"
 echo "Author: Aziel Eliab."

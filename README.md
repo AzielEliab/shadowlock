@@ -1,18 +1,49 @@
 # ShadowLock
 
-Looks at jobs you already finished and compares them to a guess.
-It **OS-hooks into AZ-OS** for process/job observation under ethics policy.
-It does **not** run jobs, save people, or send anything to the internet.
+Compares a finished job to a guess, then forgets the file.
 
 **Author:** Aziel Eliab
-**Date:** July 2026
 **License:** [Apache-2.0](LICENSE)
 
-> Change is optional. Truth is not.
+## Quick start (three steps)
+
+1. Install: `python -m venv .venv && source .venv/bin/activate && pip install -e .`
+2. Open the local page: `shadowlock ui`
+3. At http://127.0.0.1:8764, drag a Softwares tile onto ShadowLock, or select one and press **Link**. Optional check: `shadowlock doctor`.
+
+Loopback only (`127.0.0.1`). No CDN, no telemetry.
+
+## Notes
 
 **THIS IS:** a read-only, zero-retention outcome mirror for jobs you already have.
 
 **THIS IS NOT:** a dispatcher, optimizer, scheduler, predictor, people profiler, or truth score.
+
+It OS-hooks into AZ-OS for process/job observation under ethics policy. **Import JSON file**, **Attach via AZ-OS**, and **Export JSON report** are under Advanced on the local page.
+
+## Link record
+
+ShadowLock writes the link file when you link a product.
+
+| | |
+|---|---|
+| File | `~/.shadowlock/links.json` |
+| Override | `SHADOWLOCK_LINKS` |
+| API | `GET http://127.0.0.1:8764/api/links` |
+| Catalog | `GET http://127.0.0.1:8764/api/software` |
+| Terminal | `shadowlock links` or `shadowlock links --json` |
+
+Each link stores `slug`, `kind` (`plain`, `gate`, or `lock`), `input_id`, `input_path`, `linked_at`, and `business_label`. The kind follows the suite order: Plain, then Gate, then Lock. Clock is not Lock.
+
+When the file is missing, or `links` is empty, nothing is linked. The page says so. Linking does not copy a job file into this record.
+
+## 4DMap
+
+4DMap is a separate Softwares. It has its own install and its own tile in the suite. It may optionally read `~/.shadowlock/links.json` on its own desk. ShadowLock does not include 4DMap’s map.
+
+> Change is optional. Truth is not.
+
+**Date:** July 2026
 
 Paper: DOI [10.5281/zenodo.21435707](https://doi.org/10.5281/zenodo.21435707) · [Zenodo record](https://zenodo.org/records/21435707)
 
@@ -20,14 +51,6 @@ See the spec: [docs/whitepaper.md](docs/whitepaper.md).
 How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Forks are welcome and always allowed.**
-
-## Quick start (three steps)
-
-1. Install: `python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"`
-2. Open the local page: `shadowlock ui`
-3. At http://127.0.0.1:8764, tap **Import JSON file** or **Attach via AZ-OS**, then **Show report**. Tap **Export JSON report** to save. Optional check: `shadowlock doctor --verify`.
-
-Loopback only (`127.0.0.1`). No CDN, no telemetry.
 
 ## One-click install
 
@@ -73,15 +96,22 @@ ShadowLock **OS-hooks into AZ-OS** for process/job observation under ethics poli
 
 ## CLI
 
+People get short sentences. Add `--json` for the same machine payload.
+
 ```bash
-shadowlock version
+shadowlock
+shadowlock --help
 shadowlock ui
 shadowlock doctor
 shadowlock doctor --verify
+shadowlock doctor --json
+shadowlock observe --in jobs.jsonl
+shadowlock observe --in jobs.jsonl --json
 shadowlock import examples/job.json
 shadowlock export report.json
 
 shadowlock attach
+shadowlock attach --json
 shadowlock observe --azos --stdout
 shadowlock observe --in jobs.jsonl --format jsonl --out report.json
 shadowlock observe --in jobs.jsonl --stdout
@@ -90,12 +120,13 @@ shadowlock observe --in jobs.jsonl --stdout --airgap
 shadowlock observe --azos --in jobs.jsonl --stdout
 ```
 
-`--out` writes the anonymous summary JSON only (aggregates, hashed ids).
+`--out` and `--stdout` / `--json` write the anonymous summary JSON only (aggregates, hashed ids).
 Input files are opened read-only. `--airgap` refuses to run if
 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` (or lowercase) are set.
 `import` reads a JSON file you name. `export` writes a JSON file you name.
 Neither keeps a hidden copy. `--azos` / `attach` talk to AZ-OS on loopback
 (or hosted overlay labels if you pass `--hosted`). `--airgap` refuses hosted.
+`attach`, `import`, and `export` are advanced commands.
 
 Library entry point:
 

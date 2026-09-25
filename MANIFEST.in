@@ -1,4 +1,6 @@
 include SKILL.md
+include RUN.txt
+include shadowlock/software_catalog.json
 include install.sh
 include LICENSE
 include README.md
